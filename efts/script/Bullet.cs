@@ -3,7 +3,9 @@ using System;
 
 public partial class Bullet : CharacterBody2D{
 	[Signal]
-	public delegate void BulletHitEventHandler();
+	public delegate void BulletHitEventHandler(float damage);
+	
+	private float damage = 20;
 	
 	[Export] // 允许在编辑器中设置子弹速度
 	public int Speed { get; set; } = 800;
@@ -25,6 +27,7 @@ public partial class Bullet : CharacterBody2D{
 		// 更新存在时间
 		_lifeTimer += (float)delta;
 		if (_lifeTimer >= Lifetime){
+			ProcessMode = ProcessModeEnum.Disabled;
 			QueueFree(); // 超过存在时间，销毁自身
 			return;
 		}
@@ -34,14 +37,20 @@ public partial class Bullet : CharacterBody2D{
 		
 		if (GetSlideCollisionCount() > 0){
 			KinematicCollision2D collision = GetSlideCollision(0);
-			EnemyController collider = collision.GetCollider() as EnemyController;
+			Enemy collider = collision.GetCollider() as Enemy;
 
 			if (collider != null){
 				// 使用分组进行碰撞类型判断
 				if (collider.IsInGroup("enemies")){
-					//BulletHit += collider.OnHitEnemy;
-					EmitSignal(SignalName.BulletHit);
+					BulletHit += collider.OnHitEnemy;
+					EmitSignal(SignalName.BulletHit,damage);
+					BulletHit -= collider.OnHitEnemy;
 				}
+				/*else if (collider.IsInGroup("player")){
+					BulletHit += collider.OnHitPlayer;
+					EmitSignal(SignalName.BulletHit,damage);
+					BulletHit -= collider.OnHitPlayer;
+				}*/
 			}
 			// 可以在这里播放爆炸特效、音效
 			ProcessMode = ProcessModeEnum.Disabled;
