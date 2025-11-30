@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://diotdgxd1suos"]
+
+[node name="Gameover" type="Node2D"]
+
+[node name="Label" type="Label" parent="."]
+offset_left = -32.0
+offset_top = -11.0
+offset_right = 32.0
+offset_bottom = 12.0
+text = "满身疮痍"
+
+[node name="Camera2D" type="Camera2D" parent="."]

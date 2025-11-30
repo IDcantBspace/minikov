@@ -37,20 +37,25 @@ public partial class Bullet : CharacterBody2D{
 		
 		if (GetSlideCollisionCount() > 0){
 			KinematicCollision2D collision = GetSlideCollision(0);
-			Enemy collider = collision.GetCollider() as Enemy;
+			Creature collider = collision.GetCollider() as Creature;
 
 			if (collider != null){
 				// 使用分组进行碰撞类型判断
+				BulletHit += collider.OnGetDamage;
+				EmitSignal(SignalName.BulletHit,damage);
+				BulletHit -= collider.OnGetDamage;
+				/*
 				if (collider.IsInGroup("enemies")){
-					BulletHit += collider.OnHitEnemy;
+					BulletHit += collider.OnGetDamage;
 					EmitSignal(SignalName.BulletHit,damage);
-					BulletHit -= collider.OnHitEnemy;
+					BulletHit -= collider.OnGetDamage;
 				}
-				/*else if (collider.IsInGroup("player")){
-					BulletHit += collider.OnHitPlayer;
+				else if (collider.IsInGroup("player")){
+					BulletHit += collider.OnGetDamage;
 					EmitSignal(SignalName.BulletHit,damage);
-					BulletHit -= collider.OnHitPlayer;
-				}*/
+					BulletHit -= collider.OnGetDamage;
+				}
+				*/
 			}
 			// 可以在这里播放爆炸特效、音效
 			ProcessMode = ProcessModeEnum.Disabled;

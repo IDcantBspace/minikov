@@ -1,12 +1,18 @@
-[gd_scene load_steps=4 format=3 uid="uid://gbiugi1qfcc0"]
+[gd_scene load_steps=7 format=3 uid="uid://gbiugi1qfcc0"]
 
 [ext_resource type="Texture2D" uid="uid://da5iplt5thbdt" path="res://assets/icon.svg" id="1_1qh7l"]
 [ext_resource type="Script" uid="uid://cnwx8o84v7oc1" path="res://script/Player.cs" id="2_2a7ng"]
+[ext_resource type="PackedScene" uid="uid://dfjddbbnxemyi" path="res://sprite/bullet.tscn" id="2_senxl"]
+[ext_resource type="PackedScene" uid="uid://diotdgxd1suos" path="res://sprite/gameover.tscn" id="3_u6aog"]
+[ext_resource type="PackedScene" uid="uid://3c8k51mrtojv" path="res://sprite/enemy.tscn" id="4_fatq2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2a7ng"]
 
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("2_2a7ng")
+BulletScene = ExtResource("2_senxl")
+GameOverScene = ExtResource("3_u6aog")
+EnemyScene = ExtResource("4_fatq2")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 scale = Vector2(2, 2)

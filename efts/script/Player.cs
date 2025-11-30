@@ -1,12 +1,15 @@
 using Godot;
 using System;
 
-public partial class Player : CharacterBody2D{
+public partial class Player : Creature{
 	
-	private int Speed { get; set; } = 200;
+	private int speed = 200;
 	
 	[Export]
 	public PackedScene BulletScene { get; set; }
+	
+	[Export]
+	public PackedScene GameOverScene { get; set; }
 	
 	//暂时！ 敌人预制场景
 	[Export]
@@ -21,19 +24,18 @@ public partial class Player : CharacterBody2D{
 	// 引用Sprite2D节点
 	private Sprite2D _sprite;
 	
-	private float maxHealthPoint = 100;
-	private float healthPoint;
 	
 	private float _fireTimer = 0f;
 	private bool _isFiring = false;
 	
-	private RandomNumberGenerator randomNum = new RandomNumberGenerator();
+	//private RandomNumberGenerator randomNum = new RandomNumberGenerator();
 	
 	// 初始化函数
 	public override void _Ready(){
-		// 以时间为种子生成随机数
-		randomNum.Randomize();
-
+		// 以时间为种子生成随机数(弃用，改用GD生成随机数)
+		//randomNum.Randomize();
+		
+		maxHealthPoint = 100;
 		healthPoint = maxHealthPoint;
 		AddToGroup("player");
 		
@@ -105,7 +107,9 @@ public partial class Player : CharacterBody2D{
 			return;
 		}
 		// 设置初始位置
-		Vector2 spawnPosition = GlobalPosition + new Vector2(randomNum.RandfRange(-500.0f, 500.0f),randomNum.RandfRange(-500.0f, 500.0f));
+		Vector2 spawnPosition = GlobalPosition + new Vector2(
+			(float)GD.RandRange(-500.0f, 500.0f),(float)GD.RandRange(-500.0f, 500.0f)
+			);
 		if (checkCollision(spawnPosition, 50f)){
 			// 1. 实例化
 			Enemy enemyInstance = EnemyScene.Instantiate<Enemy>();
@@ -140,7 +144,6 @@ public partial class Player : CharacterBody2D{
 		Vector2 shootDirection = (mousePos - muzzleGlobalPosition).Normalized();
 		// 调用子弹的初始化方法
 		bulletInstance.Initialize(shootDirection);
-
 	}
 
 	// 每帧处理
@@ -154,7 +157,7 @@ public partial class Player : CharacterBody2D{
 	// 移动逻辑
 	private void HandleMovement(){
 		Vector2 inputVector = Input.GetVector("move_W", "move_E", "move_N", "move_S");
-		Velocity = inputVector * Speed;
+		Velocity = inputVector * speed;
 		MoveAndSlide();
 	}
 
@@ -171,8 +174,18 @@ public partial class Player : CharacterBody2D{
 		_sprite.Rotation = angle;
 	}
 	
-	public void OnHitPlayer(float damage){
+	public override void OnGetDamage(float damage){
 		healthPoint = healthPoint - damage;
 		GD.Print($"我血流满地啊 HP:"+healthPoint+"/"+maxHealthPoint);
+		if(healthPoint==0){
+			GD.Print($"呃啊！");
+			Node2D gameOverInstance = GameOverScene.Instantiate<Node2D>();
+			// 2. 获取场景树根节点（或当前场景）并添加实例
+			GetTree().CurrentScene.AddChild(gameOverInstance);
+			gameOverInstance.GlobalPosition = GlobalPosition;
+			GetTree().Paused = true;
+			ProcessMode = ProcessModeEnum.Disabled;
+			CallDeferred("queue_free");
+		}
 	}
 }
