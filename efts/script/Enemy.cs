@@ -51,6 +51,9 @@ public partial class Enemy : Creature{
 			GD.PrintErr("BulletScene is not assigned in the inspector!");
 			return;
 		}
+		if (player.healthPoint == 0){
+			return;
+		}
 		// 计算全球坐标系下的枪口位置
 		Vector2 playerPosition = player.GlobalPosition;
 		Vector2 enemyPosition = this.GlobalPosition;

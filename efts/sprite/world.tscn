@@ -1,12 +1,16 @@
-[gd_scene load_steps=5 format=3 uid="uid://bmbdx1rb4l4go"]
+[gd_scene load_steps=8 format=3 uid="uid://bmbdx1rb4l4go"]
 
 [ext_resource type="PackedScene" uid="uid://gbiugi1qfcc0" path="res://sprite/player.tscn" id="1_5y81h"]
+[ext_resource type="Script" uid="uid://rnm6xrgy60xm" path="res://script/World.cs" id="1_e8g1t"]
 [ext_resource type="Texture2D" uid="uid://da5iplt5thbdt" path="res://assets/icon.svg" id="2_6b2o6"]
 [ext_resource type="PackedScene" uid="uid://3c8k51mrtojv" path="res://sprite/enemy.tscn" id="4_e8g1t"]
+[ext_resource type="PackedScene" uid="uid://cas8evj5hjcdw" path="res://sprite/inventory_sprite/inv_dollars.tscn" id="5_wssfk"]
+[ext_resource type="PackedScene" uid="uid://gexxftetpf4k" path="res://sprite/inventory_sprite/inv_null.tscn" id="6_b2d2h"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6b2o6"]
 
 [node name="world" type="Node2D"]
+script = ExtResource("1_e8g1t")
 
 [node name="Player" parent="." instance=ExtResource("1_5y81h")]
 position = Vector2(530, -1)
@@ -23,3 +27,70 @@ shape = SubResource("RectangleShape2D_6b2o6")
 
 [node name="Enemy" parent="." instance=ExtResource("4_e8g1t")]
 position = Vector2(253, -210)
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="Inventory" type="Panel" parent="UILayer"]
+self_modulate = Color(0, 0, 0, 0.768627)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Label" type="Label" parent="UILayer/Inventory"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 936.0
+offset_top = 110.0
+offset_right = -888.0
+offset_bottom = -947.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "这是一个背包"
+horizontal_alignment = 1
+
+[node name="GridContainer" type="GridContainer" parent="UILayer/Inventory"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 1137.0
+offset_top = 590.0
+offset_right = -591.0
+offset_bottom = -298.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/h_separation = 64
+theme_override_constants/v_separation = 64
+columns = 3
+
+[node name="InvDollars" parent="UILayer/Inventory/GridContainer" instance=ExtResource("5_wssfk")]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="InvDollars2" parent="UILayer/Inventory/GridContainer" instance=ExtResource("5_wssfk")]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="InvNull" parent="UILayer/Inventory/GridContainer" instance=ExtResource("6_b2d2h")]
+layout_mode = 2
+
+[node name="InvDollars3" parent="UILayer/Inventory/GridContainer" instance=ExtResource("5_wssfk")]
+layout_mode = 2
+
+[node name="InvNull2" parent="UILayer/Inventory/GridContainer" instance=ExtResource("6_b2d2h")]
+layout_mode = 2
+
+[node name="InvNull3" parent="UILayer/Inventory/GridContainer" instance=ExtResource("6_b2d2h")]
+layout_mode = 2
+
+[node name="InvNull4" parent="UILayer/Inventory/GridContainer" instance=ExtResource("6_b2d2h")]
+layout_mode = 2
+
+[node name="InvNull5" parent="UILayer/Inventory/GridContainer" instance=ExtResource("6_b2d2h")]
+layout_mode = 2
+
+[node name="InvDollars4" parent="UILayer/Inventory/GridContainer" instance=ExtResource("5_wssfk")]
+layout_mode = 2

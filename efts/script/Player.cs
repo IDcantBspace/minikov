@@ -58,9 +58,11 @@ public partial class Player : Creature{
 	public override void _Process(double delta){
 		QueueRedraw(); 
 		HandleFiring((float)delta);
-		if (Input.IsActionJustPressed("testDeployEnemy"))
-		{
+		if (Input.IsActionJustPressed("testDeployEnemy")){
 			deployEnemy();
+		}
+		if (Input.IsActionJustPressed("openInventory")){
+			GD.Print("背包");
 		}
 	}
 
@@ -183,7 +185,7 @@ public partial class Player : Creature{
 			// 2. 获取场景树根节点（或当前场景）并添加实例
 			GetTree().CurrentScene.AddChild(gameOverInstance);
 			gameOverInstance.GlobalPosition = GlobalPosition;
-			GetTree().Paused = true;
+			//GetTree().Paused = true;
 			ProcessMode = ProcessModeEnum.Disabled;
 			CallDeferred("queue_free");
 		}
