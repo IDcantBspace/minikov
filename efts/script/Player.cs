@@ -5,6 +5,10 @@ public partial class Player : Creature{
 	
 	private int speed = 200;
 	
+	private Panel inventory;
+	
+	private bool inventoryIsOpen = false;
+	
 	[Export]
 	public PackedScene BulletScene { get; set; }
 	
@@ -39,6 +43,7 @@ public partial class Player : Creature{
 		healthPoint = maxHealthPoint;
 		AddToGroup("player");
 		
+		inventory = GetNode<Panel>("../UILayer/Inventory");
 		// 获取Sprite2D节点
 		_sprite = GetNode<Sprite2D>("Sprite2D");
 		// 如果场景中没有Sprite2D节点，可以在这里创建一个
@@ -57,12 +62,21 @@ public partial class Player : Creature{
 	// 每帧更新绘制
 	public override void _Process(double delta){
 		QueueRedraw(); 
-		HandleFiring((float)delta);
-		if (Input.IsActionJustPressed("testDeployEnemy")){
-			deployEnemy();
+		if(!inventoryIsOpen){
+			HandleFiring((float)delta);
+			if (Input.IsActionJustPressed("testDeployEnemy")){
+				deployEnemy();
+			}
 		}
 		if (Input.IsActionJustPressed("openInventory")){
-			GD.Print("背包");
+			if(inventory != null && inventoryIsOpen == true){
+				inventory.Visible = false;
+				inventoryIsOpen = false;
+			}
+			else if(inventory != null && inventoryIsOpen == false){
+				inventory.Visible = true;
+				inventoryIsOpen = true;
+			}
 		}
 	}
 
@@ -150,10 +164,13 @@ public partial class Player : Creature{
 
 	// 每帧处理
 	public override void _PhysicsProcess(double delta){
-		// 移动逻辑
-		HandleMovement();
-		// 旋转逻辑
-		HandleRotation();
+		if(!inventoryIsOpen){
+			// 移动逻辑
+			HandleMovement();
+			// 旋转逻辑
+			HandleRotation();
+		}
+
 	}
 
 	// 移动逻辑
