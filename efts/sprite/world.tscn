@@ -1,17 +1,22 @@
-[gd_scene load_steps=10 format=3 uid="uid://bmbdx1rb4l4go"]
+[gd_scene load_steps=14 format=3 uid="uid://bmbdx1rb4l4go"]
 
 [ext_resource type="PackedScene" uid="uid://gbiugi1qfcc0" path="res://sprite/player.tscn" id="1_5y81h"]
 [ext_resource type="Script" uid="uid://rnm6xrgy60xm" path="res://script/World.cs" id="1_e8g1t"]
 [ext_resource type="Texture2D" uid="uid://da5iplt5thbdt" path="res://assets/icon.svg" id="2_6b2o6"]
-[ext_resource type="PackedScene" uid="uid://3c8k51mrtojv" path="res://sprite/enemy.tscn" id="4_e8g1t"]
 [ext_resource type="Texture2D" uid="uid://107di2j5lmmt" path="res://assets/inventory/inventory_panel.png" id="5_b2d2h"]
-[ext_resource type="PackedScene" uid="uid://gexxftetpf4k" path="res://sprite/inventory_sprite/inv_null.tscn" id="6_7aceq"]
-[ext_resource type="PackedScene" uid="uid://cas8evj5hjcdw" path="res://sprite/inventory_sprite/inv_dollars.tscn" id="7_gc2du"]
+[ext_resource type="Texture2D" uid="uid://dienjw5ot7vc5" path="res://assets/inventory/1.png" id="6_0a18m"]
+[ext_resource type="Script" uid="uid://c13npkpc08h6r" path="res://script/inventory/Dollars.cs" id="7_hbm4b"]
+[ext_resource type="Texture2D" uid="uid://cbtlu6yu6qo3m" path="res://assets/inventory/2.png" id="8_pk645"]
+[ext_resource type="Texture2D" uid="uid://dwmtaxiu6pmwd" path="res://assets/inventory/3.png" id="9_toxx1"]
+[ext_resource type="Texture2D" uid="uid://c81e8lwt2y3xx" path="res://assets/inventory/4.png" id="10_pw7qe"]
+[ext_resource type="Texture2D" uid="uid://bqfj73352cjn5" path="res://assets/inventory/5.png" id="11_15m0i"]
+[ext_resource type="Texture2D" uid="uid://drc3j2rbv07vk" path="res://assets/inventory/6.png" id="12_l3vb2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6b2o6"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_e8g1t"]
 texture = ExtResource("5_b2d2h")
+region_rect = Rect2(0, 0, 192, 128)
 
 [node name="world" type="Node2D"]
 script = ExtResource("1_e8g1t")
@@ -29,9 +34,6 @@ texture = ExtResource("2_6b2o6")
 scale = Vector2(6, 6)
 shape = SubResource("RectangleShape2D_6b2o6")
 
-[node name="Enemy" parent="." instance=ExtResource("4_e8g1t")]
-position = Vector2(253, -210)
-
 [node name="UILayer" type="CanvasLayer" parent="."]
 
 [node name="Inventory" type="Panel" parent="UILayer"]
@@ -40,6 +42,12 @@ self_modulate = Color(0, 0, 0, 0.768627)
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 206.0
+offset_top = 99.0
+offset_right = -539.0
+offset_bottom = -62.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Label" type="Label" parent="UILayer/Inventory"]
 layout_mode = 1
@@ -57,49 +65,143 @@ horizontal_alignment = 1
 
 [node name="PanelContainer" type="PanelContainer" parent="UILayer/Inventory"]
 layout_mode = 0
-offset_left = 1177.0
+offset_left = 800.0
 offset_top = 493.0
-offset_right = 1369.0
-offset_bottom = 749.0
+offset_right = 992.0
+offset_bottom = 621.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_e8g1t")
 
 [node name="GridContainer" type="GridContainer" parent="UILayer/Inventory/PanelContainer"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
 columns = 3
 
-[node name="InvNull" parent="UILayer/Inventory/PanelContainer/GridContainer" instance=ExtResource("6_7aceq")]
+[node name="Slot1" type="AspectRatioContainer" parent="UILayer/Inventory/PanelContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="InvDollars" parent="UILayer/Inventory/PanelContainer/GridContainer" instance=ExtResource("7_gc2du")]
+[node name="TextureRect" type="TextureRect" parent="UILayer/Inventory/PanelContainer/GridContainer/Slot1"]
+layout_mode = 2
+texture = ExtResource("6_0a18m")
+script = ExtResource("7_hbm4b")
+
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="UILayer/Inventory/PanelContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="InvDollars2" parent="UILayer/Inventory/PanelContainer/GridContainer" instance=ExtResource("7_gc2du")]
+[node name="TextureRect2" type="TextureRect" parent="UILayer/Inventory/PanelContainer/GridContainer/AspectRatioContainer"]
+layout_mode = 2
+texture = ExtResource("8_pk645")
+script = ExtResource("7_hbm4b")
+
+[node name="AspectRatioContainer2" type="AspectRatioContainer" parent="UILayer/Inventory/PanelContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="InvNull2" parent="UILayer/Inventory/PanelContainer/GridContainer" instance=ExtResource("6_7aceq")]
+[node name="TextureRect3" type="TextureRect" parent="UILayer/Inventory/PanelContainer/GridContainer/AspectRatioContainer2"]
+layout_mode = 2
+texture = ExtResource("9_toxx1")
+script = ExtResource("7_hbm4b")
+
+[node name="AspectRatioContainer3" type="AspectRatioContainer" parent="UILayer/Inventory/PanelContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="InvNull3" parent="UILayer/Inventory/PanelContainer/GridContainer" instance=ExtResource("6_7aceq")]
+[node name="TextureRect4" type="TextureRect" parent="UILayer/Inventory/PanelContainer/GridContainer/AspectRatioContainer3"]
+layout_mode = 2
+texture = ExtResource("10_pw7qe")
+script = ExtResource("7_hbm4b")
+
+[node name="AspectRatioContainer4" type="AspectRatioContainer" parent="UILayer/Inventory/PanelContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="InvNull4" parent="UILayer/Inventory/PanelContainer/GridContainer" instance=ExtResource("6_7aceq")]
+[node name="TextureRect5" type="TextureRect" parent="UILayer/Inventory/PanelContainer/GridContainer/AspectRatioContainer4"]
+layout_mode = 2
+texture = ExtResource("11_15m0i")
+script = ExtResource("7_hbm4b")
+
+[node name="AspectRatioContainer5" type="AspectRatioContainer" parent="UILayer/Inventory/PanelContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="InvNull5" parent="UILayer/Inventory/PanelContainer/GridContainer" instance=ExtResource("6_7aceq")]
+[node name="TextureRect6" type="TextureRect" parent="UILayer/Inventory/PanelContainer/GridContainer/AspectRatioContainer5"]
+layout_mode = 2
+texture = ExtResource("12_l3vb2")
+script = ExtResource("7_hbm4b")
+
+[node name="Panel" type="Panel" parent="UILayer/Inventory"]
+offset_left = 1204.0
+offset_top = -2.0
+offset_right = 1508.0
+offset_bottom = 916.0
+
+[node name="PanelContainer" type="PanelContainer" parent="UILayer/Inventory/Panel"]
+offset_left = 50.0
+offset_top = 50.0
+offset_right = 242.0
+offset_bottom = 178.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_e8g1t")
+
+[node name="GridContainer" type="GridContainer" parent="UILayer/Inventory/Panel/PanelContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
+columns = 3
+
+[node name="Slot1" type="AspectRatioContainer" parent="UILayer/Inventory/Panel/PanelContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="InvDollars3" parent="UILayer/Inventory/PanelContainer/GridContainer" instance=ExtResource("7_gc2du")]
+[node name="TextureRect" type="TextureRect" parent="UILayer/Inventory/Panel/PanelContainer/GridContainer/Slot1"]
+layout_mode = 2
+texture = ExtResource("6_0a18m")
+script = ExtResource("7_hbm4b")
+
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="UILayer/Inventory/Panel/PanelContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="InvNull6" parent="UILayer/Inventory/PanelContainer/GridContainer" instance=ExtResource("6_7aceq")]
+[node name="TextureRect2" type="TextureRect" parent="UILayer/Inventory/Panel/PanelContainer/GridContainer/AspectRatioContainer"]
+layout_mode = 2
+texture = ExtResource("8_pk645")
+script = ExtResource("7_hbm4b")
+
+[node name="AspectRatioContainer2" type="AspectRatioContainer" parent="UILayer/Inventory/Panel/PanelContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="InvDollars4" parent="UILayer/Inventory/PanelContainer/GridContainer" instance=ExtResource("7_gc2du")]
+[node name="TextureRect3" type="TextureRect" parent="UILayer/Inventory/Panel/PanelContainer/GridContainer/AspectRatioContainer2"]
+layout_mode = 2
+texture = ExtResource("9_toxx1")
+script = ExtResource("7_hbm4b")
+
+[node name="AspectRatioContainer3" type="AspectRatioContainer" parent="UILayer/Inventory/Panel/PanelContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="InvNull7" parent="UILayer/Inventory/PanelContainer/GridContainer" instance=ExtResource("6_7aceq")]
+[node name="TextureRect4" type="TextureRect" parent="UILayer/Inventory/Panel/PanelContainer/GridContainer/AspectRatioContainer3"]
+layout_mode = 2
+texture = ExtResource("10_pw7qe")
+script = ExtResource("7_hbm4b")
+
+[node name="AspectRatioContainer4" type="AspectRatioContainer" parent="UILayer/Inventory/Panel/PanelContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="InvNull8" parent="UILayer/Inventory/PanelContainer/GridContainer" instance=ExtResource("6_7aceq")]
+[node name="TextureRect5" type="TextureRect" parent="UILayer/Inventory/Panel/PanelContainer/GridContainer/AspectRatioContainer4"]
 layout_mode = 2
+texture = ExtResource("11_15m0i")
+script = ExtResource("7_hbm4b")
+
+[node name="AspectRatioContainer5" type="AspectRatioContainer" parent="UILayer/Inventory/Panel/PanelContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="TextureRect6" type="TextureRect" parent="UILayer/Inventory/Panel/PanelContainer/GridContainer/AspectRatioContainer5"]
+layout_mode = 2
+texture = ExtResource("12_l3vb2")
+script = ExtResource("7_hbm4b")

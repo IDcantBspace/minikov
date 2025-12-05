@@ -2,43 +2,174 @@ using Godot;
 using System;
 
 public partial class Dollars : TextureRect{
-	private bool _isDragging = false;
-	private Vector2 _dragOffset = Vector2.Zero; // 记录鼠标点击位置与物品自身的偏移[citation:10]
+	private bool isDragging = false;
+	private Vector2 dragOffsetInLocalSpace = Vector2.Zero; // 改回本地偏移计算
+	private Control originalSlot;
+	private GridContainer gridContainer;
+
+	private AspectRatioContainer targetSlot;
+	private CanvasLayer dragLayer;
+	public override void _Ready(){
+		gridContainer = GetParent()?.GetParent() as GridContainer;
+		originalSlot = GetParent() as Control;
+		dragLayer = GetNode<CanvasLayer>("/root/world/UILayer");
+	}
 
 	public override void _Input(InputEvent @event){
-		// 处理鼠标左键按下事件
-		if (@event is InputEventMouseButton mbEvent && mbEvent.ButtonIndex == MouseButton.Left){
-			// 获取此物品在全局坐标系下的矩形区域[citation:10]
-			Rect2 globalRect = new Rect2(GlobalPosition, Size);
+		// 修改点3：增加关键安全检查！
+		if (!IsInsideTree()) return; // 如果本节点不在场景树中，直接返回，避免崩溃
 
-			if (mbEvent.Pressed){
-				// 如果按下时鼠标在物品范围内，开始拖拽[citation:10]
-				if (globalRect.HasPoint(mbEvent.GlobalPosition)){
-					_isDragging = true;
-					_dragOffset = mbEvent.GlobalPosition - GlobalPosition;
-					// 可以在此处将物品设为所有节点的顶层，避免被遮挡[citation:9]
+		if (@event is InputEventMouseButton mbEvent && mbEvent.ButtonIndex == MouseButton.Left){
+			Rect2 globalRect = new Rect2(GlobalPosition, Size);
+			bool isMouseOverItem = globalRect.HasPoint(mbEvent.GlobalPosition);
+
+			if (mbEvent.Pressed && isMouseOverItem){
+				// 开始拖拽
+				isDragging = true;
+				
+				// 计算偏移量（使用全局坐标和物品自身全局坐标的差值）
+				dragOffsetInLocalSpace = mbEvent.GlobalPosition - GlobalPosition;
+				
+				ZIndex = 100;
+				
+				// 关键：检查是否有有效的拖拽层
+				if (dragLayer != null && originalSlot != null){
+					// 记录原父节点和位置（局部坐标）
+					Vector2 originalLocalPos = Position;
+					originalSlot.RemoveChild(this);
+					dragLayer.AddChild(this);
+					
+					// 设置新父节点下的全局位置，使其看起来在原地
+					GlobalPosition = mbEvent.GlobalPosition - dragOffsetInLocalSpace;
 				}
+				else{
+					GD.PrintErr("拖拽层或原始槽位未找到！");
+					isDragging = false; // 无法拖拽
+					return;
+				}
+
+				// 可选：标记事件已处理
+				GetViewport().SetInputAsHandled();
 			}
-			else{
-				// 鼠标释放，结束拖拽
-				_isDragging = false;
-				// 在此处触发“放置物品”的逻辑，例如与格子交换位置
-				HandleDrop();
+			else if (!mbEvent.Pressed && isDragging){
+				isDragging = false;
+				ZIndex = 0;
+				TryDrop();
 			}
 		}
 	}
 
 	public override void _Process(double delta){
-		// 如果正在拖拽，让物品位置跟随鼠标（减去偏移量）[citation:10]
-		if (_isDragging){
-			GlobalPosition = GetGlobalMousePosition() - _dragOffset;
+		if (isDragging){
+			// 直接使用鼠标全局坐标更新位置
+			GlobalPosition = GetGlobalMousePosition() - dragOffsetInLocalSpace;
 		}
 	}
 
-	private void HandleDrop(){
-		// 核心：处理物品放置逻辑
-		// 1. 使用射线检测等方法，获取鼠标下方是哪个“物品格”(Slot)。
-		// 2. 通知物品栏管理器（如 Inventory.cs），进行物品位置交换或堆叠的逻辑判断。
-		// 3. 根据管理器的结果，将此物品节点的父节点设置为新的格子，并重置其位置。
+	private void TryDrop(){
+		// 安全：如果不在场景树，直接返回
+		if (!IsInsideTree()) return;
+
+		Vector2 mouseScreenPos = GetViewport().GetMousePosition();
+		targetSlot = FindSlotAtPosition(dragLayer ,mouseScreenPos);
+		
+		if (targetSlot != null){
+			PlaceIntoSlot(targetSlot);
+		}
+		else{
+			ReturnToOriginalSlot();
+		}
+	}
+
+	private AspectRatioContainer FindSlotAtPosition(Node root, Vector2 screenPos){
+		if (gridContainer == null || !gridContainer.IsInsideTree()) return null;
+		// 遍历所有槽位（AspectRatioContainer）
+		if (root is AspectRatioContainer aspectRatioContainer){
+			Rect2 slotGlobalRect = new Rect2(aspectRatioContainer.GlobalPosition, aspectRatioContainer.Size);
+			if (slotGlobalRect.HasPoint(screenPos)) return aspectRatioContainer;
+		}
+		//foreach (AspectRatioContainer slot in gridContainer.GetChildren()){
+			// 检查屏幕坐标是否在槽位的全局矩形内
+		foreach (Node child in root.GetChildren()){
+			AspectRatioContainer found = FindSlotAtPosition(child, screenPos);
+			if (found != null){
+				return found; // 在子节点分支中找到，立即返回
+			}
+		}
+		return null;
+	}
+
+	private void PlaceIntoSlot(Control targetSlot){
+		// 1. 基础安全检查
+		if (targetSlot == null || !targetSlot.IsInsideTree()){
+			GD.PrintErr("PlaceIntoSlot: 目标槽位无效。");
+			ReturnToOriginalSlot();
+			return;
+		}
+
+		// 2. 查找目标槽位中已存在的物品
+		Dollars targetItem = null;
+		foreach (Node child in targetSlot.GetChildren()){
+			// 注意：这里假设你的物品脚本名为`Dollars`
+			if (child is Dollars item) {
+				targetItem = item;
+				break;
+			}
+		}
+
+		// 3. 执行放置或交换
+		if (targetItem == null){
+			// 情况A：目标槽位为空，直接放入
+			GetParent()?.RemoveChild(this);
+			targetSlot.AddChild(this);
+			Position = Vector2.Zero; // 重置在新槽位内的位置
+			// 更新自己的原始槽位记录
+			originalSlot = targetSlot;
+			//物品已放置到空槽位
+		}
+		else{
+			// 情况B：目标槽位有物品，执行交换
+			// 3.1 安全检查：确保两个物品不是同一个，且有原始槽位
+			if (targetItem == this || originalSlot == null){
+				GD.PrintErr("无法与自己交换或原始槽位丢失。");
+				ReturnToOriginalSlot();
+				return;
+			}
+
+			// 3.2 交换核心逻辑
+			// a) 将目标物品移动到我原来的槽位
+			targetItem.GetParent()?.RemoveChild(targetItem);
+			originalSlot.AddChild(targetItem);
+			targetItem.Position = Vector2.Zero; // 目标物品在原始槽位中复位
+			// **关键**：更新目标物品记录的“原始槽位”，现在对它而言，它的新家就是我的原槽位
+			targetItem.originalSlot = originalSlot;
+
+			// b) 将我移动到目标槽位
+			GetParent()?.RemoveChild(this);
+			targetSlot.AddChild(this);
+			Position = Vector2.Zero; // 我在新槽位中复位
+			// 更新我自己的原始槽位记录，现在我的新家就是目标槽位
+			originalSlot = targetSlot;
+
+			GD.Print($"物品交换成功！与槽位中的物品互换了位置。");
+
+			// 3.3 （可选）发出交换完成的信号，方便其他系统（如库存管理器）更新数据
+			// EmitSignal(SignalName.ItemsSwapped, this, targetItem);
+		}
+	}
+
+	// 为了支持交换，ReturnToOriginalSlot 可以保持原样，但建议增加一点日志
+	private void ReturnToOriginalSlot(){
+		if (originalSlot != null && originalSlot.IsInsideTree()){
+			GetParent()?.RemoveChild(this);
+			originalSlot.AddChild(this);
+			Position = Vector2.Zero;
+			GD.Print("物品已返回原始槽位。");
+		}
+		else{
+			GD.PrintErr("无法返回原始槽位，槽位无效或不在场景树中。");
+			// 作为最后手段，可以销毁自己，但请谨慎
+			// QueueFree();
+		}
 	}
 }
