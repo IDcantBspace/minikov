@@ -16,10 +16,16 @@ public partial class Enemy : Creature{
 	
 	private Vector2 moveDirection;
 	
+	private AudioStreamPlayer2D audio;
+	
+	private bool isDead = false;
+	
 	[Export]
 	public Sprite2D HP { get; set; }
 
 	public override void _Ready(){
+		audio = GetNode<AudioStreamPlayer2D>("AudioStreamPlayer2D");
+		audio.Finished += onFinished;
 		player = GetNode<Node2D>("../Player") as Player;
 		maxHealthPoint = 100;
 		healthPoint = maxHealthPoint;
@@ -38,11 +44,12 @@ public partial class Enemy : Creature{
 	}
 	
 	private void OnTimeOut(){
-		if (player != null){
-			Shoot();
+		if(!isDead){
+			if (player != null){
+				Shoot();
+			}
+			ChooseMoveDirection();
 		}
-		
-		ChooseMoveDirection();
 	}
 	
 	private void Shoot(){
@@ -104,15 +111,29 @@ public partial class Enemy : Creature{
 	}
 
 	public override void OnGetDamage(float damage){
-		healthPoint = healthPoint-damage;
-		HP.Scale = new Vector2(hpScale.X*(healthPoint/maxHealthPoint),hpScale.Y);
-		// 获取精灵纹理缩放后的变化量
-		//float hpPositionMove = HP.Texture.GetWidth()*hpScale.X*(damage/maxHealthPoint)/2;
-		//HP.Position -= new Vector2(hpPositionMove,0);
-		if(healthPoint==0){
-			GD.Print($"呃啊！");
-			ProcessMode = ProcessModeEnum.Disabled;
-			QueueFree();
+		if(!isDead){
+			healthPoint = healthPoint-damage;
+			HP.Scale = new Vector2(hpScale.X*(healthPoint/maxHealthPoint),hpScale.Y);
+			// 获取精灵纹理缩放后的变化量
+			//float hpPositionMove = HP.Texture.GetWidth()*hpScale.X*(damage/maxHealthPoint)/2;
+			//HP.Position -= new Vector2(hpPositionMove,0);
+			if(healthPoint==0){
+				GD.Print($"呃啊！");
+				if(audio != null){
+					isDead = true;
+					moveDirection = Vector2.Zero;
+					audio.Play();
+				}
+				else{
+					ProcessMode = ProcessModeEnum.Disabled;
+					QueueFree();
+				}
+			}
 		}
+	}
+	
+	private void onFinished(){
+		ProcessMode = ProcessModeEnum.Disabled;
+		QueueFree();
 	}
 }

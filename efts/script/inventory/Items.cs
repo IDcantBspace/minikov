@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public partial class Dollars : TextureRect{
+public partial class Items : TextureRect{
 	private bool isDragging = false;
 	private Vector2 dragOffsetInLocalSpace = Vector2.Zero; // 改回本地偏移计算
 	private Control originalSlot;
@@ -89,7 +89,6 @@ public partial class Dollars : TextureRect{
 			if (slotGlobalRect.HasPoint(screenPos)) return aspectRatioContainer;
 		}
 		//foreach (AspectRatioContainer slot in gridContainer.GetChildren()){
-			// 检查屏幕坐标是否在槽位的全局矩形内
 		foreach (Node child in root.GetChildren()){
 			AspectRatioContainer found = FindSlotAtPosition(child, screenPos);
 			if (found != null){
@@ -106,17 +105,15 @@ public partial class Dollars : TextureRect{
 			ReturnToOriginalSlot();
 			return;
 		}
-
 		// 2. 查找目标槽位中已存在的物品
-		Dollars targetItem = null;
+		Items targetItem = null;
 		foreach (Node child in targetSlot.GetChildren()){
-			// 注意：这里假设你的物品脚本名为`Dollars`
-			if (child is Dollars item) {
+			// 注意：这里假设你的物品脚本名为`Items`
+			if (child is Items item) {
 				targetItem = item;
 				break;
 			}
 		}
-
 		// 3. 执行放置或交换
 		if (targetItem == null){
 			// 情况A：目标槽位为空，直接放入
@@ -135,7 +132,6 @@ public partial class Dollars : TextureRect{
 				ReturnToOriginalSlot();
 				return;
 			}
-
 			// 3.2 交换核心逻辑
 			// a) 将目标物品移动到我原来的槽位
 			targetItem.GetParent()?.RemoveChild(targetItem);
@@ -143,16 +139,13 @@ public partial class Dollars : TextureRect{
 			targetItem.Position = Vector2.Zero; // 目标物品在原始槽位中复位
 			// **关键**：更新目标物品记录的“原始槽位”，现在对它而言，它的新家就是我的原槽位
 			targetItem.originalSlot = originalSlot;
-
 			// b) 将我移动到目标槽位
 			GetParent()?.RemoveChild(this);
 			targetSlot.AddChild(this);
 			Position = Vector2.Zero; // 我在新槽位中复位
 			// 更新我自己的原始槽位记录，现在我的新家就是目标槽位
 			originalSlot = targetSlot;
-
 			GD.Print($"物品交换成功！与槽位中的物品互换了位置。");
-
 			// 3.3 （可选）发出交换完成的信号，方便其他系统（如库存管理器）更新数据
 			// EmitSignal(SignalName.ItemsSwapped, this, targetItem);
 		}

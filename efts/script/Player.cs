@@ -5,7 +5,7 @@ public partial class Player : Creature{
 	
 	private int speed = 200;
 	
-	private Panel inventory;
+	private Inventory inventory;
 	
 	private bool inventoryIsOpen = false;
 	
@@ -43,7 +43,7 @@ public partial class Player : Creature{
 		healthPoint = maxHealthPoint;
 		AddToGroup("player");
 		
-		inventory = GetNode<Panel>("../UILayer/Inventory");
+		inventory = GetNode<Inventory>("../UILayer/Inventory");
 		// 获取Sprite2D节点
 		_sprite = GetNode<Sprite2D>("Sprite2D");
 		// 如果场景中没有Sprite2D节点，可以在这里创建一个
@@ -59,9 +59,42 @@ public partial class Player : Creature{
 		DrawLine(Vector2.Zero, rotatedOffset, Colors.Yellow, 2); // 黄线连接角色中心和枪口
 	}
 
+	//**记得改**
+	public void Inventory(){
+		if(inventory != null && inventoryIsOpen == true){
+			inventoryIsOpen = false;
+			inventory.Close();
+		}
+		else if(inventory != null && inventoryIsOpen == false){
+			Node2D closestNode = null;
+			// 1. 获取该分组下的所有节点
+			var nodesInGroup = GetTree().GetNodesInGroup("itemslist");
+			// 2. 遍历并计算距离
+			foreach (var node in nodesInGroup){
+				if (node is Node2D node2D){
+					// 计算与玩家的距离平方
+					float distanceSquared = GlobalPosition.DistanceSquaredTo(node2D.GlobalPosition);
+					// 判断是否在半径范围内，且是否为目前最近
+					if (distanceSquared <= (50f * 50f)){
+						closestNode = node2D;
+					}
+				}
+			}
+			inventoryIsOpen = true;
+			if(closestNode != null){
+				inventory.Initialize(closestNode);
+			}
+			else{
+				inventory.Initialize();
+			}
+			
+		}
+	}
+
 	// 每帧更新绘制
 	public override void _Process(double delta){
 		QueueRedraw(); 
+		//**临时**放置敌人
 		if(!inventoryIsOpen){
 			HandleFiring((float)delta);
 			if (Input.IsActionJustPressed("testDeployEnemy")){
@@ -69,14 +102,7 @@ public partial class Player : Creature{
 			}
 		}
 		if (Input.IsActionJustPressed("openInventory")){
-			if(inventory != null && inventoryIsOpen == true){
-				inventory.Visible = false;
-				inventoryIsOpen = false;
-			}
-			else if(inventory != null && inventoryIsOpen == false){
-				inventory.Visible = true;
-				inventoryIsOpen = true;
-			}
+			Inventory();
 		}
 	}
 

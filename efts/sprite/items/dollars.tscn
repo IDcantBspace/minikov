@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://dwala2atfl0re"]
+
+[ext_resource type="Texture2D" uid="uid://bdt2gb83cxg7k" path="res://assets/inventory/dollars.png" id="1_pgole"]
+[ext_resource type="Script" uid="uid://c13npkpc08h6r" path="res://script/inventory/Items.cs" id="2_g1y88"]
+
+[node name="Dollars" type="TextureRect"]
+texture = ExtResource("1_pgole")
+script = ExtResource("2_g1y88")

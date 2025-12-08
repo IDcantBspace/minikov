@@ -15,6 +15,10 @@ run/main_scene="res://sprite/world.tscn"
 config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 config/icon="res://assets/icon.svg"
 
+[autoload]
+
+ItemDatabase="*res://script/ItemDatabase.cs"
+
 [display]
 
 window/size/viewport_width=1920

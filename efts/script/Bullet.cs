@@ -40,7 +40,6 @@ public partial class Bullet : CharacterBody2D{
 			Creature collider = collision.GetCollider() as Creature;
 
 			if (collider != null){
-				// 使用分组进行碰撞类型判断
 				BulletHit += collider.OnGetDamage;
 				EmitSignal(SignalName.BulletHit,damage);
 				BulletHit -= collider.OnGetDamage;

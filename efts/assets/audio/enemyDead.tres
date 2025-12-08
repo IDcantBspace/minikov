@@ -1,0 +1,21 @@
+[gd_resource type="AudioStreamRandomizer" load_steps=9 format=3 uid="uid://di0qj8ns1f724"]
+
+[ext_resource type="AudioStream" uid="uid://dhka7fvqofa47" path="res://assets/audio/enemyDeath01.wav" id="1_xcwrr"]
+[ext_resource type="AudioStream" uid="uid://bbduicjiy2s8k" path="res://assets/audio/enemyDeath02.wav" id="2_gbaxy"]
+[ext_resource type="AudioStream" uid="uid://c6t3bkuw4oy2r" path="res://assets/audio/enemyDeath03.wav" id="3_setuv"]
+[ext_resource type="AudioStream" uid="uid://cg6cg7845a5o" path="res://assets/audio/enemyDeath04.wav" id="4_7w5yq"]
+[ext_resource type="AudioStream" uid="uid://bufucqxyn2cjm" path="res://assets/audio/enemyDeath05.wav" id="5_o3jbs"]
+[ext_resource type="AudioStream" uid="uid://mfuj6qkm0w65" path="res://assets/audio/enemyDeath06.wav" id="6_0x5gv"]
+[ext_resource type="AudioStream" uid="uid://cf5gpq68ox8yg" path="res://assets/audio/enemyDeath07.wav" id="7_kmw0l"]
+[ext_resource type="AudioStream" uid="uid://bfe8fo7mred3o" path="res://assets/audio/enemyDeath08.wav" id="8_fufr5"]
+
+[resource]
+streams_count = 8
+stream_0/stream = ExtResource("1_xcwrr")
+stream_1/stream = ExtResource("2_gbaxy")
+stream_2/stream = ExtResource("3_setuv")
+stream_3/stream = ExtResource("4_7w5yq")
+stream_4/stream = ExtResource("5_o3jbs")
+stream_5/stream = ExtResource("6_0x5gv")
+stream_6/stream = ExtResource("7_kmw0l")
+stream_7/stream = ExtResource("8_fufr5")
