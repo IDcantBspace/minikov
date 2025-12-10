@@ -2,6 +2,10 @@ using Godot;
 using System;
 
 public partial class Items : TextureRect{
+	[Signal]
+	public delegate void SwappedEventHandler(
+		int swapType, AspectRatioContainer originSlot, AspectRatioContainer targetSlot
+		);//0:背包内交换  1:箱子内交换  2:背包换去箱子  3:箱子换去背包
 	private bool isDragging = false;
 	private Vector2 dragOffsetInLocalSpace = Vector2.Zero; // 改回本地偏移计算
 	private Control originalSlot;
@@ -105,6 +109,7 @@ public partial class Items : TextureRect{
 			ReturnToOriginalSlot();
 			return;
 		}
+
 		// 2. 查找目标槽位中已存在的物品
 		Items targetItem = null;
 		foreach (Node child in targetSlot.GetChildren()){
@@ -120,6 +125,8 @@ public partial class Items : TextureRect{
 			GetParent()?.RemoveChild(this);
 			targetSlot.AddChild(this);
 			Position = Vector2.Zero; // 重置在新槽位内的位置
+			GD.Print("准备signal");
+			SwapSignal(originalSlot,targetSlot);
 			// 更新自己的原始槽位记录
 			originalSlot = targetSlot;
 			//物品已放置到空槽位
@@ -143,11 +150,31 @@ public partial class Items : TextureRect{
 			GetParent()?.RemoveChild(this);
 			targetSlot.AddChild(this);
 			Position = Vector2.Zero; // 我在新槽位中复位
+			// 3.3 发出交换完成的信号，方便其他系统更新数据
+			GD.Print("准备signal");
+			SwapSignal(originalSlot,targetSlot);
 			// 更新我自己的原始槽位记录，现在我的新家就是目标槽位
 			originalSlot = targetSlot;
 			GD.Print($"物品交换成功！与槽位中的物品互换了位置。");
-			// 3.3 （可选）发出交换完成的信号，方便其他系统（如库存管理器）更新数据
-			// EmitSignal(SignalName.ItemsSwapped, this, targetItem);
+		}
+	}
+	
+	//信号发送筛选
+	private void SwapSignal(Control oSlot, Control tSlot){
+		Inventory inventory = GetNode<Inventory>("/root/world/UILayer/Inventory");
+		Swapped += inventory.OnSwapped;
+		GD.Print("signal");
+		if (oSlot.IsInGroup("InvSlot") && tSlot.IsInGroup("InvSlot")){
+			EmitSignal(SignalName.Swapped, 0, oSlot, tSlot);
+		}
+		else if (oSlot.IsInGroup("BoxSlot") && tSlot.IsInGroup("BoxSlot")){
+			EmitSignal(SignalName.Swapped, 1, oSlot, tSlot);
+		}
+		else if (oSlot.IsInGroup("InvSlot") && tSlot.IsInGroup("BoxSlot")){
+			EmitSignal(SignalName.Swapped, 2, oSlot, tSlot);
+		}
+		else if (oSlot.IsInGroup("BoxSlot") && tSlot.IsInGroup("InvSlot")){
+			EmitSignal(SignalName.Swapped, 3, oSlot, tSlot);
 		}
 	}
 

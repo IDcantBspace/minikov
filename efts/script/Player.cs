@@ -3,6 +3,9 @@ using System;
 
 public partial class Player : Creature{
 	
+	[Signal]
+	public delegate void OpenBoxEventHandler(bool isOpen,Node list);
+	
 	private int speed = 200;
 	
 	private Inventory inventory;
@@ -44,6 +47,7 @@ public partial class Player : Creature{
 		AddToGroup("player");
 		
 		inventory = GetNode<Inventory>("../UILayer/Inventory");
+		OpenBox += inventory.OnOpenBox;
 		// 获取Sprite2D节点
 		_sprite = GetNode<Sprite2D>("Sprite2D");
 		// 如果场景中没有Sprite2D节点，可以在这里创建一个
@@ -61,17 +65,17 @@ public partial class Player : Creature{
 
 	//**记得改**
 	public void Inventory(){
+		Box closestNode = null;
 		if(inventory != null && inventoryIsOpen == true){
 			inventoryIsOpen = false;
-			inventory.Close();
+			EmitSignal(SignalName.OpenBox, inventoryIsOpen, closestNode);
 		}
 		else if(inventory != null && inventoryIsOpen == false){
-			Node2D closestNode = null;
 			// 1. 获取该分组下的所有节点
 			var nodesInGroup = GetTree().GetNodesInGroup("itemslist");
 			// 2. 遍历并计算距离
 			foreach (var node in nodesInGroup){
-				if (node is Node2D node2D){
+				if (node is Box node2D){
 					// 计算与玩家的距离平方
 					float distanceSquared = GlobalPosition.DistanceSquaredTo(node2D.GlobalPosition);
 					// 判断是否在半径范围内，且是否为目前最近
@@ -80,14 +84,11 @@ public partial class Player : Creature{
 					}
 				}
 			}
-			inventoryIsOpen = true;
 			if(closestNode != null){
-				inventory.Initialize(closestNode);
+				OpenBox += closestNode.OnOpenBox;
 			}
-			else{
-				inventory.Initialize();
-			}
-			
+			inventoryIsOpen = true;
+			EmitSignal(SignalName.OpenBox, inventoryIsOpen, closestNode);
 		}
 	}
 

@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://cufofpy2lvg4c"]
+
+[ext_resource type="Texture2D" uid="uid://dienjw5ot7vc5" path="res://assets/inventory/1.png" id="1_vnmvp"]
+[ext_resource type="Script" uid="uid://c13npkpc08h6r" path="res://script/inventory/Items.cs" id="2_mtkdb"]
+
+[node name="TextureRect" type="TextureRect"]
+texture = ExtResource("1_vnmvp")
+script = ExtResource("2_mtkdb")

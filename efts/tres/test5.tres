@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3 uid="uid://byv83cjt37g4o"]
+
+[ext_resource type="Script" uid="uid://cfyc64j3ek5s8" path="res://script/ItemData.cs" id="1_aaslt"]
+[ext_resource type="PackedScene" uid="uid://yhaqlryfqew4" path="res://sprite/items/test5.tscn" id="1_smgob"]
+
+[resource]
+script = ExtResource("1_aaslt")
+ItemId = "000005"
+itemTscn = ExtResource("1_smgob")
+metadata/_custom_type_script = "uid://cfyc64j3ek5s8"

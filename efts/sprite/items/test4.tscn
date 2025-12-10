@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://8de5rdeka3p3"]
+
+[ext_resource type="Texture2D" uid="uid://c81e8lwt2y3xx" path="res://assets/inventory/4.png" id="1_5s8rn"]
+[ext_resource type="Script" uid="uid://c13npkpc08h6r" path="res://script/inventory/Items.cs" id="2_bbjra"]
+
+[node name="TextureRect4" type="TextureRect"]
+texture = ExtResource("1_5s8rn")
+script = ExtResource("2_bbjra")
