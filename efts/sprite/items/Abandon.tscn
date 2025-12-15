@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://ddcipsajjknri"]
+
+[ext_resource type="Texture2D" uid="uid://bntstnene7nbb" path="res://assets/inventory/abandon.png" id="1_twaht"]
+
+[node name="Abandon" type="TextureRect"]
+offset_right = 64.0
+offset_bottom = 64.0
+texture = ExtResource("1_twaht")

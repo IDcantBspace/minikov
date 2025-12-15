@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://bmbdx1rb4l4go"]
+[gd_scene load_steps=19 format=3 uid="uid://bmbdx1rb4l4go"]
 
 [ext_resource type="PackedScene" uid="uid://gbiugi1qfcc0" path="res://sprite/player.tscn" id="1_5y81h"]
 [ext_resource type="Script" uid="uid://rnm6xrgy60xm" path="res://script/World.cs" id="1_e8g1t"]
@@ -13,6 +13,9 @@
 [ext_resource type="PackedScene" uid="uid://10vsrtjpe7xq" path="res://sprite/items/test6.tscn" id="11_15m0i"]
 [ext_resource type="PackedScene" uid="uid://h0ey10x6vv2q" path="res://sprite/box.tscn" id="12_0a18m"]
 [ext_resource type="PackedScene" uid="uid://75fynbu0m1xm" path="res://sprite/boxListPanel.tscn" id="12_hbm4b"]
+[ext_resource type="PackedScene" uid="uid://ddcipsajjknri" path="res://sprite/items/Abandon.tscn" id="13_pk645"]
+[ext_resource type="Texture2D" uid="uid://cxxdab0xk3l4s" path="res://assets/inventory/AK74.png" id="14_pw7qe"]
+[ext_resource type="Script" uid="uid://bmtwuhmlgvc1j" path="res://script/Gun/AK74.cs" id="15_15m0i"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6b2o6"]
 
@@ -38,7 +41,7 @@ shape = SubResource("RectangleShape2D_6b2o6")
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 
-[node name="Inventory" type="Panel" parent="UILayer" node_paths=PackedStringArray("invGrid", "itemListPanel")]
+[node name="Inventory" type="Panel" parent="UILayer" node_paths=PackedStringArray("invGrid", "itemListPanel", "abandonSlot", "rifleSlot")]
 visible = false
 self_modulate = Color(0, 0, 0, 0.768627)
 anchors_preset = 15
@@ -54,6 +57,8 @@ script = ExtResource("4_hbm4b")
 BoxListPanel = ExtResource("12_hbm4b")
 invGrid = NodePath("PanelContainer/GridContainer")
 itemListPanel = NodePath("ListInventory")
+abandonSlot = NodePath("Abandon")
+rifleSlot = NodePath("RifleSlot")
 
 [node name="Label" type="Label" parent="UILayer/Inventory"]
 layout_mode = 1
@@ -139,6 +144,28 @@ offset_right = 462.0
 offset_bottom = -2.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="Abandon" type="AspectRatioContainer" parent="UILayer/Inventory"]
+layout_mode = 0
+offset_left = 1000.0
+offset_top = 800.0
+offset_right = 1064.0
+offset_bottom = 864.0
+
+[node name="Abandon" parent="UILayer/Inventory/Abandon" instance=ExtResource("13_pk645")]
+layout_mode = 2
+
+[node name="RifleSlot" type="AspectRatioContainer" parent="UILayer/Inventory"]
+layout_mode = 0
+offset_left = 130.0
+offset_top = 600.0
+offset_right = 386.0
+offset_bottom = 728.0
+
+[node name="AK74" type="TextureRect" parent="UILayer/Inventory/RifleSlot"]
+layout_mode = 2
+texture = ExtResource("14_pw7qe")
+script = ExtResource("15_15m0i")
 
 [node name="Box" parent="." instance=ExtResource("12_0a18m")]
 position = Vector2(794, 289)

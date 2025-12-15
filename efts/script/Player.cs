@@ -3,6 +3,15 @@ using System;
 
 public partial class Player : Creature{
 	
+	public float firingRate;
+	public bool fireModeManual;
+	public bool fireModeSemi;
+	public bool fireModeBurst;
+	public bool fireModeAuto;
+	
+	//射击模式之后应该添加到枪的脚本里去，别忘了改
+	public String fireMode = "Auto";
+	
 	[Signal]
 	public delegate void OpenBoxEventHandler(bool isOpen,Node list);
 	
@@ -25,23 +34,24 @@ public partial class Player : Creature{
 	[Export] // 子弹生成位置偏移
 	public Vector2 MuzzleOffset { get; set; } = new Vector2(50, 0);
 	
-	[Export] // 射击间隔（秒），控制射速
-	public float FireRate { get; set; } = 0.1f;
+	// 射击间隔（秒），控制射速
+	private float fireInterval = 999.0f;
 	
 	// 引用Sprite2D节点
 	private Sprite2D _sprite;
 	
+	private Timer shootTimer;
 	
-	private float _fireTimer = 0f;
+	private double _fireTimer = 0f;
 	private bool _isFiring = false;
-	
+	private bool _canFire = true;
+	private int fireTime = 0;
 	//private RandomNumberGenerator randomNum = new RandomNumberGenerator();
 	
 	// 初始化函数
 	public override void _Ready(){
 		// 以时间为种子生成随机数(弃用，改用GD生成随机数)
 		//randomNum.Randomize();
-		
 		maxHealthPoint = 100;
 		healthPoint = maxHealthPoint;
 		AddToGroup("player");
@@ -54,6 +64,9 @@ public partial class Player : Creature{
 		if (_sprite == null){
 			GD.Print("警告：未找到Sprite2D节点，请确保在场景中添加了Sprite2D子节点");
 		}
+		shootTimer = new Timer();
+		AddChild(shootTimer);
+		shootTimer.Timeout += OnTimeOut; // 连接超时信号
 	}
 	
 	// 在编辑器和游戏中绘制枪口位置
@@ -63,7 +76,117 @@ public partial class Player : Creature{
 		DrawLine(Vector2.Zero, rotatedOffset, Colors.Yellow, 2); // 黄线连接角色中心和枪口
 	}
 
-	//**记得改**
+	// 每帧处理
+	public override void _PhysicsProcess(double delta){
+		if(!inventoryIsOpen){
+			// 移动逻辑
+			HandleMovement();
+			// 旋转逻辑
+			HandleRotation();
+		}
+	}
+
+	// 每帧更新绘制
+	public override void _Process(double delta){
+		QueueRedraw(); 
+		//**临时**放置敌人
+		if(!inventoryIsOpen){
+			if (Input.IsActionJustPressed("changeFireMode") && !_isFiring){
+				ChangeFireMode();
+			}
+			//if (Input.IsMouseButtonPressed(MouseButton.Left)){
+			if (Input.IsActionJustPressed("openFire")){
+				_isFiring = true;
+				shootTimer.Start();
+			}
+			if (Input.IsActionJustReleased("openFire")){
+				_isFiring = false;
+			}
+			if(_isFiring){
+					Shoot();
+			}
+			if (Input.IsActionJustPressed("testDeployEnemy")){
+				deployEnemy();
+			}
+		}
+		if (Input.IsActionJustPressed("openInventory")){
+			Inventory();
+		}
+	}
+
+	public void OnTimeOut(){
+		_canFire = true;
+	}
+
+	//切换射击模式
+	public void ChangeFireMode(){
+		if(fireMode == "Manual"){
+			if(fireModeSemi == true){
+				fireMode = "Semi";
+				return;
+			}
+			else if(fireModeBurst == true){
+				fireMode = "Burst";
+				return;
+			}
+			else if(fireModeAuto == true){
+				fireMode = "Auto";
+				return;
+			}
+			else return;
+		}
+		else if(fireMode == "Semi"){
+			if(fireModeBurst == true){
+				fireMode = "Burst";
+				return;
+			}
+			else if(fireModeAuto == true){
+				fireMode = "Auto";
+				return;
+			}
+			else if(fireModeManual == true){
+				fireMode = "Manual";
+				return;
+			}
+			else return;
+		}
+		else if(fireMode == "Burst"){
+			if(fireModeAuto == true){
+				fireMode = "Auto";
+				return;
+			}
+			else if(fireModeManual == true){
+				fireMode = "Manual";
+				return;
+			}
+			else if(fireModeSemi == true){
+				fireMode = "Semi";
+				return;
+			}
+			else return;
+		}
+		else if(fireMode == "Auto"){
+			if(fireModeManual == true){
+				fireMode = "Manual";
+				return;
+			}
+			else if(fireModeSemi == true){
+				fireMode = "Semi";
+				return;
+			}
+			else if(fireModeBurst == true){
+				fireMode = "Burst";
+				return;
+			}
+			else return;
+		}
+		else{
+			fireMode = "Semi";
+			return;
+		}
+	}
+
+	//切换背包状态
 	public void Inventory(){
 		Box closestNode = null;
 		if(inventory != null && inventoryIsOpen == true){
@@ -92,37 +215,43 @@ public partial class Player : Creature{
 		}
 	}
 
-	// 每帧更新绘制
-	public override void _Process(double delta){
-		QueueRedraw(); 
-		//**临时**放置敌人
-		if(!inventoryIsOpen){
-			HandleFiring((float)delta);
-			if (Input.IsActionJustPressed("testDeployEnemy")){
-				deployEnemy();
-			}
-		}
-		if (Input.IsActionJustPressed("openInventory")){
-			Inventory();
-		}
+	public void UpdateGunDate(){
+		fireInterval = 60/firingRate;
+		shootTimer.WaitTime = fireInterval;
 	}
 
-	// 射击
-	private void HandleFiring(float delta){
-		// 1. 检测鼠标左键按下状态
-		_isFiring = Input.IsMouseButtonPressed(MouseButton.Left);
-		if (_isFiring){
-			// 2. 射击间隔计时
-			_fireTimer -= delta;
-			if (_fireTimer <= 0){
-				// 3. 重置计时器并执行射击
-				_fireTimer = FireRate;
-				Shoot();
+	// 生成子弹
+	private void Shoot(){
+		if(_canFire){
+			// 安全检查
+			if (BulletScene == null){
+				GD.PrintErr("BulletScene is not assigned in the inspector!");
+				return;
+			}
+			// 1. 实例化子弹
+			Bullet bulletInstance = BulletScene.Instantiate<Bullet>();
+			// 2. 获取场景树根节点（或当前场景）并添加子弹实例
+			GetTree().CurrentScene.AddChild(bulletInstance);
+			// 3. 设置子弹的初始位置和方向
+			// 计算全球坐标系下的枪口位置
+			Vector2 muzzleGlobalPosition = GlobalPosition + MuzzleOffset.Rotated(_sprite.Rotation);
+			bulletInstance.GlobalPosition = muzzleGlobalPosition;
+			// 计算朝向鼠标的方向
+			Vector2 mousePos = GetGlobalMousePosition();
+			Vector2 shootDirection = (mousePos - muzzleGlobalPosition).Normalized();
+			// 调用子弹的初始化方法
+			bulletInstance.Initialize(shootDirection);
+			_canFire = false;
+			if(fireMode == "Burst"){
+				fireTime++;
 			}
 		}
-		else{
-			// 松开鼠标时重置计时器，可以立即射击
-			_fireTimer = 0;
+		if(fireMode == "Semi"){
+			_isFiring = false;
+		}
+		if(fireMode == "Burst" && fireTime == 3){
+			fireTime = 0;
+			_isFiring = false;
 		}
 	}
 
@@ -165,39 +294,6 @@ public partial class Player : Creature{
 			GD.Print("生成位置被占用，尝试其他位置");
 			// 可以在这里实现重试逻辑
 		}
-	}
-
-	// 生成子弹
-	private void Shoot(){
-		// 安全检查
-		if (BulletScene == null){
-			GD.PrintErr("BulletScene is not assigned in the inspector!");
-			return;
-		}
-		// 1. 实例化子弹
-		Bullet bulletInstance = BulletScene.Instantiate<Bullet>();
-		// 2. 获取场景树根节点（或当前场景）并添加子弹实例
-		GetTree().CurrentScene.AddChild(bulletInstance);
-		// 3. 设置子弹的初始位置和方向
-		// 计算全球坐标系下的枪口位置
-		Vector2 muzzleGlobalPosition = GlobalPosition + MuzzleOffset.Rotated(_sprite.Rotation);
-		bulletInstance.GlobalPosition = muzzleGlobalPosition;
-		// 计算朝向鼠标的方向
-		Vector2 mousePos = GetGlobalMousePosition();
-		Vector2 shootDirection = (mousePos - muzzleGlobalPosition).Normalized();
-		// 调用子弹的初始化方法
-		bulletInstance.Initialize(shootDirection);
-	}
-
-	// 每帧处理
-	public override void _PhysicsProcess(double delta){
-		if(!inventoryIsOpen){
-			// 移动逻辑
-			HandleMovement();
-			// 旋转逻辑
-			HandleRotation();
-		}
-
 	}
 
 	// 移动逻辑

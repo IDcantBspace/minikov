@@ -1,11 +1,13 @@
 using Godot;
 using System;
 
-public partial class Items : TextureRect{
+public partial class AK74 : Gun{
+	
+	//UI相关属性
 	[Signal]
 	public delegate void SwappedEventHandler(
 		int swapType, AspectRatioContainer originSlot, AspectRatioContainer targetSlot
-		);//0:背包内交换  1:箱子内交换  2:背包换去箱子  3:箱子换去背包   4:背包销毁   5:箱子销毁
+		);//6:丢弃武器
 	private bool isDragging = false;
 	private Vector2 dragOffsetInLocalSpace = Vector2.Zero; // 改回本地偏移计算
 	private Control originalSlot;
@@ -16,13 +18,19 @@ public partial class Items : TextureRect{
 	public override void _Ready(){
 		inventory = GetNode<Inventory>("/root/world/UILayer/Inventory");
 		Swapped += inventory.OnSwapped;
+		firingRate = 600f;
+		//damage = 20;
+		fireModeManual = false;
+		fireModeSemi = true;
+		fireModeBurst = false;
+		fireModeAuto = true;
 		originalSlot = GetParent() as Control;
 		dragLayer = GetNode<CanvasLayer>("/root/world/UILayer");
 	}
 
 	public override void _Input(InputEvent @event){
 		// 修改点3：增加关键安全检查！
-		if (!IsInsideTree() || !inventory.Visible) return; // 如果本节点不在场景树中，直接返回，避免崩溃
+		if (!IsInsideTree() || !inventory.Visible) return;
 		if (@event is InputEventMouseButton mbEvent && mbEvent.ButtonIndex == MouseButton.Left){
 			Rect2 globalRect = new Rect2(GlobalPosition, Size);
 			bool isMouseOverItem = globalRect.HasPoint(mbEvent.GlobalPosition);
@@ -67,17 +75,10 @@ public partial class Items : TextureRect{
 	private void TryDrop(){
 		// 安全：如果不在场景树，直接返回
 		if (!IsInsideTree()) return;
-
 		Vector2 mouseScreenPos = GetViewport().GetMousePosition();
-		targetSlot = FindSlotAtPosition(dragLayer ,mouseScreenPos);
-		
-		if (targetSlot != null){
-			if(targetSlot.IsInGroup("RifleSlot")){
-				ReturnToOriginalSlot();
-			}
-			else{
-				PlaceIntoSlot(targetSlot);
-			}
+		targetSlot = FindSlotAtPosition(dragLayer, mouseScreenPos);
+		if (targetSlot != null && targetSlot.IsInGroup("AbandonSlot")){
+			PlaceIntoSlot(targetSlot);
 		}
 		else{
 			ReturnToOriginalSlot();
@@ -106,86 +107,16 @@ public partial class Items : TextureRect{
 			ReturnToOriginalSlot();
 			return;
 		}
-		//拖动到销毁槽
-		if (targetSlot.IsInGroup("AbandonSlot")){
-			SwapSignal(originalSlot);
-		}
-		// 2. 查找目标槽位中已存在的物品
-		Items targetItem = null;
-		foreach (Node child in targetSlot.GetChildren()){
-			// 注意：这里假设你的物品脚本名为`Items`
-			if (child is Items item) {
-				targetItem = item;
-				break;
-			}
-		}
-		// 3. 执行放置或交换
-		if (targetItem == null){
-			// 情况A：目标槽位为空，直接放入
-			GetParent()?.RemoveChild(this);
-			targetSlot.AddChild(this);
-			Position = Vector2.Zero; // 重置在新槽位内的位置
-			GD.Print("准备signal");
-			SwapSignal(originalSlot,targetSlot);
-			// 更新自己的原始槽位记录
-			originalSlot = targetSlot;
-			//物品已放置到空槽位
-		}
-		else{
-			// 情况B：目标槽位有物品，执行交换
-			// 3.1 安全检查：确保两个物品不是同一个，且有原始槽位
-			if (targetItem == this || originalSlot == null){
-				GD.PrintErr("无法与自己交换或原始槽位丢失。");
-				ReturnToOriginalSlot();
-				return;
-			}
-			// 3.2 交换核心逻辑
-			// a) 将目标物品移动到我原来的槽位
-			targetItem.GetParent()?.RemoveChild(targetItem);
-			originalSlot.AddChild(targetItem);
-			targetItem.Position = Vector2.Zero; // 目标物品在原始槽位中复位
-			// **关键**：更新目标物品记录的“原始槽位”，现在对它而言，它的新家就是我的原槽位
-			targetItem.originalSlot = originalSlot;
-			// b) 将我移动到目标槽位
-			GetParent()?.RemoveChild(this);
-			targetSlot.AddChild(this);
-			Position = Vector2.Zero; // 我在新槽位中复位
-			// 3.3 发出交换完成的信号，方便其他系统更新数据
-			GD.Print("准备signal");
-			SwapSignal(originalSlot,targetSlot);
-			// 更新我自己的原始槽位记录，现在我的新家就是目标槽位
-			originalSlot = targetSlot;
-			GD.Print($"物品交换成功！与槽位中的物品互换了位置。");
-		}
+		SwapSignal(originalSlot);
 	}
 	
 	private void SwapSignal(Control oSlot){
+		Inventory inventory = GetNode<Inventory>("/root/world/UILayer/Inventory");
+		Swapped += inventory.OnSwapped;
 		GD.Print("signal");
-		if (oSlot.IsInGroup("InvSlot")){
-			EmitSignal(SignalName.Swapped, 4, oSlot, oSlot);
-		}
-		else if (oSlot.IsInGroup("BoxSlot")){
-			EmitSignal(SignalName.Swapped, 5, oSlot, oSlot);
-		}
+		EmitSignal(SignalName.Swapped, 6, oSlot, oSlot);
 		ProcessMode = ProcessModeEnum.Disabled;
 		QueueFree();
-	}
-	
-	//信号发送筛选
-	private void SwapSignal(Control oSlot, Control tSlot){
-		GD.Print("signal");
-		if (oSlot.IsInGroup("InvSlot") && tSlot.IsInGroup("InvSlot")){
-			EmitSignal(SignalName.Swapped, 0, oSlot, tSlot);
-		}
-		else if (oSlot.IsInGroup("BoxSlot") && tSlot.IsInGroup("BoxSlot")){
-			EmitSignal(SignalName.Swapped, 1, oSlot, tSlot);
-		}
-		else if (oSlot.IsInGroup("InvSlot") && tSlot.IsInGroup("BoxSlot")){
-			EmitSignal(SignalName.Swapped, 2, oSlot, tSlot);
-		}
-		else if (oSlot.IsInGroup("BoxSlot") && tSlot.IsInGroup("InvSlot")){
-			EmitSignal(SignalName.Swapped, 3, oSlot, tSlot);
-		}
 	}
 
 	// 为了支持交换，ReturnToOriginalSlot 可以保持原样，但建议增加一点日志

@@ -3,6 +3,8 @@ using System;
 using System.Linq;
 
 public partial class Inventory : Panel{
+	
+	private Player player;
 	private Box itemBox;
 	private AspectRatioContainer[] invSlotList;
 	private AspectRatioContainer[] boxSlotList;
@@ -19,14 +21,25 @@ public partial class Inventory : Panel{
 	public String[] invItemsList;
 	public String[] boxItemsList;
 	public PanelContainer boxListPanel;
+	[Export]
+	public Control abandonSlot { get; set; }
+	[Export]
+	public Control rifleSlot { get; set; }
+	public Gun rifle;
 	
 	public override void _Ready(){
+		player = GetNode<Player>("/root/world/Player");
+		abandonSlot.AddToGroup("AbandonSlot");
+		rifleSlot.AddToGroup("RifleSlot");
+		//临时设置枪
+		rifle = GetNode<Gun>("/root/world/UILayer/Inventory/RifleSlot/AK74");
 		invItemsList = Enumerable.Repeat("000000", listLength).ToArray();
 		boxItemsList = Enumerable.Repeat("000000", listLength).ToArray();
 		TestReady();
 		invSlotList = new AspectRatioContainer[6];
 		GetInvSlot(6);
 		boxSlotList = new AspectRatioContainer[6];
+		UpdateGunDate();
 	}
 	
 	public void TestReady(){
@@ -36,6 +49,15 @@ public partial class Inventory : Panel{
 		invItemsList[3] = "000004";
 		invItemsList[4] = "000005";
 		invItemsList[5] = "000006";
+	}
+	
+	public void UpdateGunDate(){
+		player.firingRate = rifle.firingRate;
+		player.fireModeManual = rifle.fireModeManual;
+		player.fireModeSemi = rifle.fireModeSemi;
+		player.fireModeBurst = rifle.fireModeBurst;
+		player.fireModeAuto = rifle.fireModeAuto;
+		player.UpdateGunDate();
 	}
 	
 	//信号响应，调用不同方法
@@ -175,6 +197,25 @@ public partial class Inventory : Panel{
 			String temStr = boxItemsList[originNum];
 			boxItemsList[originNum] = invItemsList[targetNum];
 			invItemsList[targetNum] = temStr;
+		}
+		else if(swapType == 4){
+			for(int i=0; i<invSlotList.Length; i++){
+				if(invSlotList[i] == originSlot){
+					originNum = i;
+				}
+			}
+			invItemsList[originNum] = "000000";
+		}
+		else if(swapType == 5){
+			for(int i=0; i<boxItemsList.Length; i++){
+				if(boxSlotList[i] == originSlot){
+					originNum = i;
+				}
+			}
+			boxItemsList[originNum] = "000000";
+		}
+		else if(swapType == 6){
+			GD.Print("delete gun");
 		}
 	}
 }
