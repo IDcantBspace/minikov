@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 
 public partial class Inventory : Panel{
 	
@@ -24,22 +25,58 @@ public partial class Inventory : Panel{
 	[Export]
 	public Control abandonSlot { get; set; }
 	[Export]
-	public Control rifleSlot { get; set; }
-	public Gun rifle;
+	public Control rifleSlot1 { get; set; }
+	public Weapon rifle1;
+	[Export]
+	public Control rifleSlot2 { get; set; }
+	public Weapon rifle2;
+	[Export]
+	public Control pistolSlot { get; set; }
+	public Weapon pistol;
 	
 	public override void _Ready(){
 		player = GetNode<Player>("/root/world/Player");
 		abandonSlot.AddToGroup("AbandonSlot");
-		rifleSlot.AddToGroup("RifleSlot");
+		rifleSlot1.AddToGroup("RifleSlot");
+		rifleSlot2.AddToGroup("RifleSlot");
+		pistolSlot.AddToGroup("PistolSlot");
 		//临时设置枪
-		rifle = GetNode<Gun>("/root/world/UILayer/Inventory/RifleSlot/AK74");
+		rifle1 = GetNode<Weapon>("/root/world/UILayer/Inventory/RifleSlot1/AK74");
 		invItemsList = Enumerable.Repeat("000000", listLength).ToArray();
 		boxItemsList = Enumerable.Repeat("000000", listLength).ToArray();
+		FindItemsInSlots();
 		TestReady();
 		invSlotList = new AspectRatioContainer[6];
 		GetInvSlot(6);
 		boxSlotList = new AspectRatioContainer[6];
 		UpdateGunDate();
+	}
+	
+	private void FindItemsInSlots()
+	{
+		rifle1 = FindTextureRectInSlot(rifleSlot1);
+		rifle2 = FindTextureRectInSlot(rifleSlot2);
+		pistol = FindTextureRectInSlot(pistolSlot);
+	}
+	
+	private Weapon FindTextureRectInSlot(Control slot)
+	{
+		// 获取容器节点。这里使用GetNode，假设这些节点与当前脚本挂载的节点是同级或子级。
+		// 你需要根据实际的节点路径进行调整，例如可能为 $"../{slotNodeName}" 或 $"{slotNodeName}"
+		if (slot == null){
+			GD.PrintErr($"未找到容器节点！");
+			return null;
+		}
+		// 遍历容器的所有直接子节点
+		foreach (Node child in slot.GetChildren()){
+			// 检查子节点是否为TextureRect类型
+			if (child is Weapon textureRect){
+				// 找到TextureRect，直接返回
+				return textureRect;
+			}
+		}
+		// 循环结束，未找到任何TextureRect子节点
+		return null;
 	}
 	
 	public void TestReady(){
@@ -52,12 +89,28 @@ public partial class Inventory : Panel{
 	}
 	
 	public void UpdateGunDate(){
-		player.firingRate = rifle.firingRate;
-		player.fireModeManual = rifle.fireModeManual;
-		player.fireModeSemi = rifle.fireModeSemi;
-		player.fireModeBurst = rifle.fireModeBurst;
-		player.fireModeAuto = rifle.fireModeAuto;
-		player.UpdateGunDate();
+		if(rifle1 != null){
+			player.UpdateGunDate(
+				0, "Semi", rifle1.firingRate, rifle1.fireModeManual, rifle1.fireModeSemi,
+				rifle1.fireModeBurst, rifle1.fireModeAuto, rifle1.magazineSize,
+				rifle1.reloadTime, rifle1.tacReloadTime, rifle1.gunshotSound, rifle1.reloadSound
+				);
+		}
+		if(rifle2 != null){
+			player.UpdateGunDate(
+				1, "Semi", rifle2.firingRate, rifle2.fireModeManual, rifle2.fireModeSemi,
+				rifle2.fireModeBurst, rifle2.fireModeAuto, rifle2.magazineSize,
+				rifle2.reloadTime, rifle2.tacReloadTime, rifle2.gunshotSound, rifle2.reloadSound
+				);
+		}
+		if(pistol != null){
+			player.UpdateGunDate(
+				1, "Semi", pistol.firingRate, pistol.fireModeManual, pistol.fireModeSemi,
+				pistol.fireModeBurst, pistol.fireModeAuto, pistol.magazineSize,
+				pistol.reloadTime, pistol.tacReloadTime, pistol.gunshotSound, pistol.reloadSound
+				);
+		}
+
 	}
 	
 	//信号响应，调用不同方法

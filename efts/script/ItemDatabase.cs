@@ -14,7 +14,7 @@ public partial class ItemDatabase : Node{
 
 	private void LoadAllItems()
 	{
-		using var dir = DirAccess.Open("res://tres/"); // 请确认这是正确路径
+		using var dir = DirAccess.Open("res://tres/ItemData/"); // 请确认这是正确路径
 		if (dir == null)
 		{
 			GD.PrintErr("ItemDatabase: 无法打开资源目录！请检查路径。");
@@ -34,7 +34,7 @@ public partial class ItemDatabase : Node{
 		{
 			if (!dir.CurrentIsDir() && fileName.EndsWith(".tres"))
 			{
-				string fullPath = "res://tres/" + fileName; // 确保与上面目录一致
+				string fullPath = "res://tres/ItemData/" + fileName; // 确保与上面目录一致
 				var itemRes = GD.Load<ItemData>(fullPath);
 				if (itemRes == null)
 				{

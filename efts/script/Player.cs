@@ -1,25 +1,27 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public partial class Player : Creature{
-	
-	public float firingRate;
-	public bool fireModeManual;
-	public bool fireModeSemi;
-	public bool fireModeBurst;
-	public bool fireModeAuto;
-	
-	//射击模式之后应该添加到枪的脚本里去，别忘了改
-	public String fireMode = "Auto";
 	
 	[Signal]
 	public delegate void OpenBoxEventHandler(bool isOpen,Node list);
 	
-	private int speed = 200;
+	[Export]
+	public RichTextLabel HUDText { get; set; }
 	
+	private int speed = 200;
+		
 	private Inventory inventory;
 	
 	private bool inventoryIsOpen = false;
+	
+	private AudioStreamPlayer2D gunShotPlayer;
+	private AudioStreamPlayer2D noisePlayer;
+	private AudioStreamPlayer2D reloadPlayer;
+	public float tinnitus = 0.0f;
+	public AudioEffectLowPassFilter lowPass;
+	//public AudioEffectDistortion distortion;
 	
 	[Export]
 	public PackedScene BulletScene { get; set; }
@@ -42,14 +44,56 @@ public partial class Player : Creature{
 	
 	private Timer shootTimer;
 	
-	private double _fireTimer = 0f;
 	private bool _isFiring = false;
+	private bool _isReloading = false;
 	private bool _canFire = true;
 	private int fireTime = 0;
-	//private RandomNumberGenerator randomNum = new RandomNumberGenerator();
+	public List<weaponData> weapon = new List<weaponData>();
+	public int usingWeapon = 0;
+	public int weaponNum = 0;
+	public String waitingFor = null;
+	
+	public class weaponData{
+		public bool canUse;
+		public String fireMode;
+		public float firingRate;
+		public bool fireModeManual;
+		public bool fireModeSemi;
+		public bool fireModeBurst;
+		public bool fireModeAuto;
+		public int magazineSize;
+		public int ammoNum;
+		public int magazineNum;
+		public float reloadTime;
+		public float tacReloadTime;
+		public AudioStream gunshotSound;
+		public AudioStream reloadSound;
+		
+		public weaponData(bool U, String mode, float R, bool M, bool S, 
+			bool B, bool A, int mag, float rt, float trt, AudioStream Sound, AudioStream rSound)
+		{
+			this.canUse = U;
+			this.fireMode = mode;
+			this.firingRate = R;
+			this.fireModeManual = M;
+			this.fireModeSemi = S;
+			this.fireModeBurst = B;
+			this.fireModeAuto = A;
+			this.gunshotSound = Sound;
+			this.magazineSize = mag;
+			this.reloadTime = rt;
+			this.tacReloadTime = trt;
+			this.reloadSound = rSound;
+			ammoNum = 0;
+			magazineNum = 5;
+		}
+	}
 	
 	// 初始化函数
 	public override void _Ready(){
+		gunShotPlayer = GetNode<AudioStreamPlayer2D>("GunShotPlayer");
+		noisePlayer = GetNode<AudioStreamPlayer2D>("NoisePlayer");
+		reloadPlayer = GetNode<AudioStreamPlayer2D>("ReloadPlayer");
 		// 以时间为种子生成随机数(弃用，改用GD生成随机数)
 		//randomNum.Randomize();
 		maxHealthPoint = 100;
@@ -67,6 +111,7 @@ public partial class Player : Creature{
 		shootTimer = new Timer();
 		AddChild(shootTimer);
 		shootTimer.Timeout += OnTimeOut; // 连接超时信号
+		lowPass = AudioServer.GetBusEffect(1, 0) as AudioEffectLowPassFilter;
 	}
 	
 	// 在编辑器和游戏中绘制枪口位置
@@ -91,11 +136,22 @@ public partial class Player : Creature{
 		QueueRedraw(); 
 		//**临时**放置敌人
 		if(!inventoryIsOpen){
-			if (Input.IsActionJustPressed("changeFireMode") && !_isFiring){
+			if (Input.IsActionJustPressed("changeFireMode") && !_isFiring && !_isReloading){
 				ChangeFireMode();
+				UpdateText();
+			}
+			if (Input.IsActionJustPressed("reload") && !_isFiring && !_isReloading){
+				ReloadMagazine();
+				UpdateText();
+			}
+			if (Input.IsActionJustPressed("changeWeaponUp") && !_isFiring && !_isReloading){
+				ChangeWeaponUp();
+			}
+			if (Input.IsActionJustPressed("changeWeaponDown") && !_isFiring && !_isReloading){
+				ChangeWeaponDown();
 			}
 			//if (Input.IsMouseButtonPressed(MouseButton.Left)){
-			if (Input.IsActionJustPressed("openFire")){
+			if (Input.IsActionJustPressed("openFire") && _canFire && !_isReloading){
 				_isFiring = true;
 				shootTimer.Start();
 			}
@@ -104,6 +160,7 @@ public partial class Player : Creature{
 			}
 			if(_isFiring){
 					Shoot();
+					UpdateText();
 			}
 			if (Input.IsActionJustPressed("testDeployEnemy")){
 				deployEnemy();
@@ -112,76 +169,124 @@ public partial class Player : Creature{
 		if (Input.IsActionJustPressed("openInventory")){
 			Inventory();
 		}
+		UpdateTinnitus();
+		if(tinnitus > 0.0f){
+			tinnitus = tinnitus - (0.2f * (float)delta);
+			if(tinnitus <= 0.0f){
+				tinnitus = 0.0f;
+			}
+		}
+	}
+
+	public void UpdateText(){
+		HUDText.Text = $"{usingWeapon} {weapon[usingWeapon].fireMode} {weapon[usingWeapon].ammoNum} {weapon[usingWeapon].magazineNum}";
+	}
+
+	public void ReloadMagazine(){
+		if(weapon[usingWeapon].ammoNum == weapon[usingWeapon].magazineSize+1 || weapon[usingWeapon].magazineNum == 0){
+			return;
+		}
+		_isReloading = true;
+		_canFire = false;
+		waitingFor = "reload";
+		if(weapon[usingWeapon].ammoNum > 0){
+			weapon[usingWeapon].ammoNum = 1;
+			shootTimer.WaitTime = weapon[usingWeapon].tacReloadTime;
+			
+		}
+		else if(weapon[usingWeapon].ammoNum == 0){
+			weapon[usingWeapon].ammoNum = 0;
+			shootTimer.WaitTime = weapon[usingWeapon].reloadTime;
+		}
+		shootTimer.Start();
+		reloadPlayer.Play();
+	}
+
+	public void UpdateTinnitus(){
+		lowPass.CutoffHz = Mathf.Lerp(20000.0f, 2000.0f, tinnitus);
+		noisePlayer.VolumeDb = Mathf.Lerp(-80.0f, -20.0f, tinnitus);
 	}
 
 	public void OnTimeOut(){
 		_canFire = true;
+		if(waitingFor == "reload"){
+			weapon[usingWeapon].ammoNum += weapon[usingWeapon].magazineSize;
+			shootTimer.WaitTime = weapon[usingWeapon].reloadTime;
+			shootTimer.Stop();
+			waitingFor = null;
+			fireInterval = 60/weapon[usingWeapon].firingRate;
+			shootTimer.WaitTime = fireInterval;
+			weapon[usingWeapon].magazineNum -= 1;
+			_isReloading = false;
+			UpdateText();
+			reloadPlayer.Stop();
+		}
 	}
 
 	//切换射击模式
 	public void ChangeFireMode(){
-		if(fireMode == "Manual"){
-			if(fireModeSemi == true){
-				fireMode = "Semi";
+		if(weapon[usingWeapon].fireMode == "Manual"){
+			if(weapon[usingWeapon].fireModeSemi){
+				weapon[usingWeapon].fireMode = "Semi";
 				return;
 			}
-			else if(fireModeBurst == true){
-				fireMode = "Burst";
+			else if(weapon[usingWeapon].fireModeBurst){
+				weapon[usingWeapon].fireMode = "Burst";
 				return;
 			}
-			else if(fireModeAuto == true){
-				fireMode = "Auto";
-				return;
-			}
-			else return;
-		}
-		else if(fireMode == "Semi"){
-			if(fireModeBurst == true){
-				fireMode = "Burst";
-				return;
-			}
-			else if(fireModeAuto == true){
-				fireMode = "Auto";
-				return;
-			}
-			else if(fireModeManual == true){
-				fireMode = "Manual";
+			else if(weapon[usingWeapon].fireModeAuto){
+				weapon[usingWeapon].fireMode = "Auto";
 				return;
 			}
 			else return;
 		}
-		else if(fireMode == "Burst"){
-			if(fireModeAuto == true){
-				fireMode = "Auto";
+		else if(weapon[usingWeapon].fireMode == "Semi"){
+			if(weapon[usingWeapon].fireModeBurst){
+				weapon[usingWeapon].fireMode = "Burst";
 				return;
 			}
-			else if(fireModeManual == true){
-				fireMode = "Manual";
+			else if(weapon[usingWeapon].fireModeAuto){
+				weapon[usingWeapon].fireMode = "Auto";
 				return;
 			}
-			else if(fireModeSemi == true){
-				fireMode = "Semi";
+			else if(weapon[usingWeapon].fireModeManual){
+				weapon[usingWeapon].fireMode = "Manual";
 				return;
 			}
 			else return;
 		}
-		else if(fireMode == "Auto"){
-			if(fireModeManual == true){
-				fireMode = "Manual";
+		else if(weapon[usingWeapon].fireMode == "Burst"){
+			if(weapon[usingWeapon].fireModeAuto){
+				weapon[usingWeapon].fireMode = "Auto";
 				return;
 			}
-			else if(fireModeSemi == true){
-				fireMode = "Semi";
+			else if(weapon[usingWeapon].fireModeManual){
+				weapon[usingWeapon].fireMode = "Manual";
 				return;
 			}
-			else if(fireModeBurst == true){
-				fireMode = "Burst";
+			else if(weapon[usingWeapon].fireModeSemi){
+				weapon[usingWeapon].fireMode = "Semi";
+				return;
+			}
+			else return;
+		}
+		else if(weapon[usingWeapon].fireMode == "Auto"){
+			if(weapon[usingWeapon].fireModeManual){
+				weapon[usingWeapon].fireMode = "Manual";
+				return;
+			}
+			else if(weapon[usingWeapon].fireModeSemi){
+				weapon[usingWeapon].fireMode = "Semi";
+				return;
+			}
+			else if(weapon[usingWeapon].fireModeBurst){
+				weapon[usingWeapon].fireMode = "Burst";
 				return;
 			}
 			else return;
 		}
 		else{
-			fireMode = "Semi";
+			weapon[usingWeapon].fireMode = "Semi";
 			return;
 		}
 	}
@@ -216,13 +321,56 @@ public partial class Player : Creature{
 	}
 
 	public void UpdateGunDate(){
-		fireInterval = 60/firingRate;
+		fireInterval = 60/weapon[usingWeapon].firingRate;
 		shootTimer.WaitTime = fireInterval;
+		gunShotPlayer.Stream = weapon[usingWeapon].gunshotSound;
+		reloadPlayer.Stream = weapon[usingWeapon].reloadSound;
+		UpdateText();
+	}
+
+	public void UpdateGunDate(
+		int i, String mode, float R, bool M, bool S, 
+		bool B, bool A, int mag, float rt, float trt, AudioStream Sound, AudioStream rSound
+	){
+		weaponData newWeapon = new weaponData(true,mode,R,M,S,B,A,mag,rt,trt,Sound,rSound);
+		weapon.Add(newWeapon);
+		weaponNum++;
+		fireInterval = 60/weapon[usingWeapon].firingRate;
+		shootTimer.WaitTime = fireInterval;
+		gunShotPlayer.Stream = weapon[usingWeapon].gunshotSound;
+		reloadPlayer.Stream = weapon[usingWeapon].reloadSound;
+		UpdateText();
+	}
+
+	public void ChangeWeaponUp(){
+		usingWeapon++;
+		if(usingWeapon>=weaponNum){
+			usingWeapon = 0;
+		}
+		if(!weapon[usingWeapon].canUse){
+			ChangeWeaponUp();
+		}
+		else{
+			UpdateGunDate();
+		}
+	}
+	
+	public void ChangeWeaponDown(){
+		usingWeapon--;
+		if(usingWeapon<0){
+			usingWeapon = weaponNum-1;
+		}
+		if(!weapon[usingWeapon].canUse){
+			ChangeWeaponDown();
+		}
+		else{
+			UpdateGunDate();
+		}
 	}
 
 	// 生成子弹
 	private void Shoot(){
-		if(_canFire){
+		if(_canFire && weapon[usingWeapon].ammoNum > 0){
 			// 安全检查
 			if (BulletScene == null){
 				GD.PrintErr("BulletScene is not assigned in the inspector!");
@@ -242,14 +390,22 @@ public partial class Player : Creature{
 			// 调用子弹的初始化方法
 			bulletInstance.Initialize(shootDirection);
 			_canFire = false;
-			if(fireMode == "Burst"){
+			if(weapon[usingWeapon].fireMode == "Burst"){
 				fireTime++;
 			}
+			if(tinnitus<1.0f){
+				tinnitus += 0.05f;
+				if(tinnitus>=1.0f){
+					tinnitus = 1.0f;
+				}
+			}
+			weapon[usingWeapon].ammoNum -= 1;
+			gunShotPlayer.Play();
 		}
-		if(fireMode == "Semi"){
+		if(weapon[usingWeapon].fireMode == "Semi"){
 			_isFiring = false;
 		}
-		if(fireMode == "Burst" && fireTime == 3){
+		if(weapon[usingWeapon].fireMode == "Burst" && fireTime == 3){
 			fireTime = 0;
 			_isFiring = false;
 		}

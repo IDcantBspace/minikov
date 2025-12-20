@@ -1,0 +1,12 @@
+[gd_resource type="AudioStreamRandomizer" load_steps=4 format=3 uid="uid://beyjyhwsft1uj"]
+
+[ext_resource type="AudioStream" uid="uid://dorpk7fw3ut2a" path="res://assets/audio/AK74ShootVoice1.wav" id="1_wvrpd"]
+[ext_resource type="AudioStream" uid="uid://bsvl4cuhnkux5" path="res://assets/audio/AK74ShootVoice2.wav" id="2_17y2d"]
+[ext_resource type="AudioStream" uid="uid://ctjmwl7sd4w1e" path="res://assets/audio/AK74ShootVoice3.wav" id="3_rlo3h"]
+
+[resource]
+playback_mode = 1
+streams_count = 3
+stream_0/stream = ExtResource("1_wvrpd")
+stream_1/stream = ExtResource("2_17y2d")
+stream_2/stream = ExtResource("3_rlo3h")
