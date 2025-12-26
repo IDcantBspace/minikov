@@ -17,10 +17,9 @@ public partial class Inventory : Panel{
 	public GridContainer invGrid { get; set; }
 	public GridContainer boxGrid;
 	[Export]
-	public Panel itemListPanel { get; set; }
+	public NoPlayerInventory itemListPanel { get; set; }
 	public int listLength = 6;
 	public String[] invItemsList;
-	public String[] boxItemsList;
 	public PanelContainer boxListPanel;
 	[Export]
 	public Control abandonSlot { get; set; }
@@ -43,12 +42,10 @@ public partial class Inventory : Panel{
 		//临时设置枪
 		rifle1 = GetNode<Weapon>("/root/world/UILayer/Inventory/RifleSlot1/AK74");
 		invItemsList = Enumerable.Repeat("000000", listLength).ToArray();
-		boxItemsList = Enumerable.Repeat("000000", listLength).ToArray();
 		FindItemsInSlots();
 		TestReady();
 		invSlotList = new AspectRatioContainer[6];
 		GetInvSlot(6);
-		boxSlotList = new AspectRatioContainer[6];
 		UpdateGunDate();
 	}
 	
@@ -114,53 +111,57 @@ public partial class Inventory : Panel{
 	}
 	
 	//信号响应，调用不同方法
-	public void OnOpenBox(bool isOpen, Node list){
+	public void OnOpenInventory(bool isOpen){
 		if(isOpen){
-			Initialize(list);
+			Initialize();
 		}
 		else{
 			Close();
 		}
 	}
 	
-	public void Initialize(Node list){
+	public void Initialize(){
 		this.Visible = true;
-		if(list == null){
-			return;
-		}
-		boxListPanel = BoxListPanel.Instantiate<PanelContainer>();
-		itemListPanel.AddChild(boxListPanel);
-		boxListPanel.Position = new Vector2(100, 100);
+	}
+	
+	public void Initialize(Box box){
+		this.Visible = true;
 		itemListPanel.Visible = true;
-		boxGrid = GetNode<GridContainer>("ListInventory/BoxListPanel/GridContainer");
-		if(boxGrid != null){
-			GetBoxSlot(6);
+		int i = 0;
+		while(box.GetItemInBox(i)!=null){
+			itemListPanel.AddItem(box.GetItemInBox(i));
+			i++;
 		}
-		itemBox = list as Box;
-		Update += itemBox.OnUpdate;
-		for(int i=0;i<itemBox.listLength;i++){
-			GD.Print("循环i="+i);
-			GD.Print(itemBox.itemsList[i]);
-			boxItemsList[i] = itemBox.itemsList[i];
-			if(itemBox.itemsList[i] != "000000"){
-				ItemData newItem = ItemDatabase.Instance.GetItem(itemBox.itemsList[i]);
-				if (newItem != null){
-					Node itemInstance = newItem.itemTscn.Instantiate();
-					boxSlotList[i].AddChild(itemInstance); // 将新实例添加到场景树中显示
-				}
-			}
-		}
+
+		//boxListPanel = BoxListPanel.Instantiate<PanelContainer>();
+		//itemListPanel.AddChild(boxListPanel);
+		//boxListPanel.Position = new Vector2(100, 100);
+		//itemListPanel.Visible = true;
+		//boxGrid = GetNode<GridContainer>("ListInventory/BoxListPanel/GridContainer");
+		//if(boxGrid != null){
+			//GetBoxSlot(6);
+		//}
+		//itemBox = list as Box;
+		//Update += itemBox.OnUpdate;
+		//for(int i=0;i<itemBox.listLength;i++){
+			//GD.Print("循环i="+i);
+			//GD.Print(itemBox.itemsList[i]);
+			//boxItemsList[i] = itemBox.itemsList[i];
+			//if(itemBox.itemsList[i] != "000000"){
+				//ItemData newItem = ItemDatabase.Instance.GetItem(itemBox.itemsList[i]);
+				//if (newItem != null){
+					//Node itemInstance = newItem.itemTscn.Instantiate();
+					//boxSlotList[i].AddChild(itemInstance); // 将新实例添加到场景树中显示
+				//}
+			//}
+		//}
 	}
 	
 	public void Close(){
-		EmitSignal(SignalName.Update, boxItemsList);
 		//Update -= itemBox.OnUpdate;
 		itemListPanel.Visible = false;
+		itemListPanel.Close();
 		this.Visible = false;
-		if(boxListPanel != null){
-			boxListPanel.QueueFree();
-			boxListPanel = null;
-		}
 	}
 	
 	public void GetInvSlot(int length){
@@ -187,88 +188,88 @@ public partial class Inventory : Panel{
 		}
 	}
 	
-	public void OnSwapped(int swapType, AspectRatioContainer originSlot, AspectRatioContainer targetSlot){
-		GD.Print("swap信号收到了");
-		int originNum = 0;
-		int targetNum = 0;
-		if(swapType == 0){
-			for(int i=0; i<invSlotList.Length; i++){
-				if(invSlotList[i] == originSlot){
-					originNum = i;
-				}
-				if(invSlotList[i] == targetSlot){
-					targetNum = i;
-				}
-			}
-			GD.Print("背包交换originNum="+originNum+"  targetNum="+targetNum);
-			String temStr = invItemsList[originNum];
-			invItemsList[originNum] = invItemsList[targetNum];
-			invItemsList[targetNum] = temStr;
-		}
-		else if(swapType == 1){
-			for(int i=0; i<boxSlotList.Length; i++){
-				if(boxSlotList[i] == originSlot){
-					originNum = i;
-				}
-				if(boxSlotList[i] == targetSlot){
-					targetNum = i;
-				}
-			}
-			GD.Print("箱子交换originNum="+originNum+"  targetNum="+targetNum);
-			String temStr = boxItemsList[originNum];
-			boxItemsList[originNum] = boxItemsList[targetNum];
-			boxItemsList[targetNum] = temStr;
-		}
-		else if(swapType == 2){
-			for(int i=0; i<invSlotList.Length; i++){
-				if(invSlotList[i] == originSlot){
-					originNum = i;
-				}
-			}
-			for(int i=0; i<boxSlotList.Length; i++){
-				if(boxSlotList[i] == targetSlot){
-					targetNum = i;
-				}
-			}
-			GD.Print("箱子交换originNum="+originNum+"  targetNum="+targetNum);
-			String temStr = invItemsList[originNum];
-			invItemsList[originNum] = boxItemsList[targetNum];
-			boxItemsList[targetNum] = temStr;
-		}
-		else if(swapType == 3){
-			for(int i=0; i<boxSlotList.Length; i++){
-				if(boxSlotList[i] == originSlot){
-					originNum = i;
-				}
-			}
-			for(int i=0; i<invSlotList.Length; i++){
-				if(invSlotList[i] == targetSlot){
-					targetNum = i;
-				}
-			}
-			GD.Print("箱子交换originNum="+originNum+"  targetNum="+targetNum);
-			String temStr = boxItemsList[originNum];
-			boxItemsList[originNum] = invItemsList[targetNum];
-			invItemsList[targetNum] = temStr;
-		}
-		else if(swapType == 4){
-			for(int i=0; i<invSlotList.Length; i++){
-				if(invSlotList[i] == originSlot){
-					originNum = i;
-				}
-			}
-			invItemsList[originNum] = "000000";
-		}
-		else if(swapType == 5){
-			for(int i=0; i<boxItemsList.Length; i++){
-				if(boxSlotList[i] == originSlot){
-					originNum = i;
-				}
-			}
-			boxItemsList[originNum] = "000000";
-		}
-		else if(swapType == 6){
-			GD.Print("delete gun");
-		}
-	}
+	//public void OnSwapped(int swapType, AspectRatioContainer originSlot, AspectRatioContainer targetSlot){
+		//GD.Print("swap信号收到了");
+		//int originNum = 0;
+		//int targetNum = 0;
+		//if(swapType == 0){
+			//for(int i=0; i<invSlotList.Length; i++){
+				//if(invSlotList[i] == originSlot){
+					//originNum = i;
+				//}
+				//if(invSlotList[i] == targetSlot){
+					//targetNum = i;
+				//}
+			//}
+			//GD.Print("背包交换originNum="+originNum+"  targetNum="+targetNum);
+			//String temStr = invItemsList[originNum];
+			//invItemsList[originNum] = invItemsList[targetNum];
+			//invItemsList[targetNum] = temStr;
+		//}
+		//else if(swapType == 1){
+			//for(int i=0; i<boxSlotList.Length; i++){
+				//if(boxSlotList[i] == originSlot){
+					//originNum = i;
+				//}
+				//if(boxSlotList[i] == targetSlot){
+					//targetNum = i;
+				//}
+			//}
+			//GD.Print("箱子交换originNum="+originNum+"  targetNum="+targetNum);
+			//String temStr = boxItemsList[originNum];
+			//boxItemsList[originNum] = boxItemsList[targetNum];
+			//boxItemsList[targetNum] = temStr;
+		//}
+		//else if(swapType == 2){
+			//for(int i=0; i<invSlotList.Length; i++){
+				//if(invSlotList[i] == originSlot){
+					//originNum = i;
+				//}
+			//}
+			//for(int i=0; i<boxSlotList.Length; i++){
+				//if(boxSlotList[i] == targetSlot){
+					//targetNum = i;
+				//}
+			//}
+			//GD.Print("箱子交换originNum="+originNum+"  targetNum="+targetNum);
+			//String temStr = invItemsList[originNum];
+			//invItemsList[originNum] = boxItemsList[targetNum];
+			//boxItemsList[targetNum] = temStr;
+		//}
+		//else if(swapType == 3){
+			//for(int i=0; i<boxSlotList.Length; i++){
+				//if(boxSlotList[i] == originSlot){
+					//originNum = i;
+				//}
+			//}
+			//for(int i=0; i<invSlotList.Length; i++){
+				//if(invSlotList[i] == targetSlot){
+					//targetNum = i;
+				//}
+			//}
+			//GD.Print("箱子交换originNum="+originNum+"  targetNum="+targetNum);
+			//String temStr = boxItemsList[originNum];
+			//boxItemsList[originNum] = invItemsList[targetNum];
+			//invItemsList[targetNum] = temStr;
+		//}
+		//else if(swapType == 4){
+			//for(int i=0; i<invSlotList.Length; i++){
+				//if(invSlotList[i] == originSlot){
+					//originNum = i;
+				//}
+			//}
+			//invItemsList[originNum] = "000000";
+		//}
+		//else if(swapType == 5){
+			//for(int i=0; i<boxItemsList.Length; i++){
+				//if(boxSlotList[i] == originSlot){
+					//originNum = i;
+				//}
+			//}
+			//boxItemsList[originNum] = "000000";
+		//}
+		//else if(swapType == 6){
+			//GD.Print("delete gun");
+		//}
+	//}
 }

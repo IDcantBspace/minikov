@@ -15,7 +15,7 @@ public partial class Items : TextureRect{
 	
 	public override void _Ready(){
 		inventory = GetNode<Inventory>("/root/world/UILayer/Inventory");
-		Swapped += inventory.OnSwapped;
+		//Swapped += inventory.OnSwapped;
 		originalSlot = GetParent() as Control;
 		dragLayer = GetNode<CanvasLayer>("/root/world/UILayer");
 	}
