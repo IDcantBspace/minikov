@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://bmbdx1rb4l4go"]
+[gd_scene load_steps=28 format=3 uid="uid://bmbdx1rb4l4go"]
 
 [ext_resource type="PackedScene" uid="uid://gbiugi1qfcc0" path="res://sprite/player.tscn" id="1_5y81h"]
 [ext_resource type="Script" uid="uid://rnm6xrgy60xm" path="res://script/World.cs" id="1_e8g1t"]
@@ -6,13 +6,13 @@
 [ext_resource type="Script" uid="uid://d3tdoxmcvn71n" path="res://script/Inventory.cs" id="4_hbm4b"]
 [ext_resource type="Texture2D" uid="uid://107di2j5lmmt" path="res://assets/inventory/inventory_panel.png" id="5_b2d2h"]
 [ext_resource type="PackedScene" uid="uid://cufofpy2lvg4c" path="res://sprite/items/test1.tscn" id="6_0a18m"]
+[ext_resource type="PackedScene" uid="uid://catlduk7aqlxj" path="res://sprite/BoxList.tscn" id="6_n46tv"]
 [ext_resource type="PackedScene" uid="uid://cr3u8mg00e6an" path="res://sprite/items/test2.tscn" id="7_hbm4b"]
 [ext_resource type="PackedScene" uid="uid://ww8qvr1a2n17" path="res://sprite/items/test3.tscn" id="8_pk645"]
 [ext_resource type="PackedScene" uid="uid://8de5rdeka3p3" path="res://sprite/items/test4.tscn" id="9_toxx1"]
 [ext_resource type="PackedScene" uid="uid://yhaqlryfqew4" path="res://sprite/items/test5.tscn" id="10_pw7qe"]
 [ext_resource type="PackedScene" uid="uid://10vsrtjpe7xq" path="res://sprite/items/test6.tscn" id="11_15m0i"]
 [ext_resource type="PackedScene" uid="uid://h0ey10x6vv2q" path="res://sprite/box.tscn" id="12_0a18m"]
-[ext_resource type="PackedScene" uid="uid://75fynbu0m1xm" path="res://sprite/boxListPanel.tscn" id="12_hbm4b"]
 [ext_resource type="PackedScene" uid="uid://ddcipsajjknri" path="res://sprite/items/Abandon.tscn" id="13_pk645"]
 [ext_resource type="Texture2D" uid="uid://cxxdab0xk3l4s" path="res://assets/inventory/AK74.png" id="14_pw7qe"]
 [ext_resource type="Script" uid="uid://bmtwuhmlgvc1j" path="res://script/Weapon/AK74.cs" id="15_15m0i"]
@@ -22,6 +22,7 @@
 [ext_resource type="Script" uid="uid://b0335jxyft6ik" path="res://script/Weapon/PM.cs" id="18_6x1pq"]
 [ext_resource type="AudioStream" uid="uid://co7mo5qvvgilf" path="res://assets/audio/PMShootVoice.tres" id="19_6x1pq"]
 [ext_resource type="AudioStream" uid="uid://c2jf3ax7laqlx" path="res://assets/audio/PMReload.wav" id="21_n46tv"]
+[ext_resource type="Script" uid="uid://bhkw2b3kkb7v0" path="res://script/Equipment.cs" id="22_n46tv"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6b2o6"]
 
@@ -29,12 +30,32 @@
 texture = ExtResource("5_b2d2h")
 region_rect = Rect2(0, 0, 192, 128)
 
+[sub_resource type="PackedScene" id="PackedScene_yumcj"]
+_bundled = {
+"conn_count": 0,
+"conns": PackedInt32Array(),
+"editable_instances": [],
+"names": PackedStringArray("BoxListPanel", "offset_right", "offset_bottom", "theme_override_styles/panel", "PanelContainer", "GridContainer", "custom_minimum_size", "layout_mode", "theme_override_constants/h_separation", "theme_override_constants/v_separation", "columns", "Slot1", "AspectRatioContainer", "Slot2", "Slot3", "Slot4", "Slot5", "Slot6"),
+"node_count": 8,
+"node_paths": [],
+"nodes": PackedInt32Array(-1, -1, 4, 0, -1, 3, 1, 0, 2, 1, 3, 2, 0, 0, 0, 5, 5, -1, 5, 6, 3, 7, 4, 8, 5, 9, 5, 10, 6, 0, 1, 0, 12, 11, -1, 2, 6, 3, 7, 4, 0, 1, 0, 12, 13, -1, 2, 6, 3, 7, 4, 0, 1, 0, 12, 14, -1, 2, 6, 3, 7, 4, 0, 1, 0, 12, 15, -1, 2, 6, 3, 7, 4, 0, 1, 0, 12, 16, -1, 2, 6, 3, 7, 4, 0, 1, 0, 12, 17, -1, 2, 6, 3, 7, 4, 0),
+"variants": [192.0, 128.0, SubResource("StyleBoxTexture_e8g1t"), Vector2(64, 64), 2, 0, 3],
+"version": 3
+}
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_n46tv"]
+texture = ExtResource("5_b2d2h")
+region_rect = Rect2(0, 0, 192, 128)
+
 [node name="world" type="Node2D"]
 script = ExtResource("1_e8g1t")
 
-[node name="Player" parent="." node_paths=PackedStringArray("HUDText") instance=ExtResource("1_5y81h")]
+[node name="Player" parent="." node_paths=PackedStringArray("HUDText", "inventory", "boxList", "equipment") instance=ExtResource("1_5y81h")]
 position = Vector2(530, -1)
 HUDText = NodePath("../UILayer/Panel/text")
+inventory = NodePath("../UILayer/Inventory")
+boxList = NodePath("../UILayer/BoxList")
+equipment = NodePath("../UILayer/Equipment")
 
 [node name="testobject" type="StaticBody2D" parent="."]
 position = Vector2(297, 168)
@@ -48,156 +69,196 @@ shape = SubResource("RectangleShape2D_6b2o6")
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 
-[node name="Inventory" type="Panel" parent="UILayer" node_paths=PackedStringArray("invGrid", "itemListPanel", "abandonSlot", "rifleSlot1", "rifleSlot2", "pistolSlot")]
+[node name="BoxList" parent="UILayer" instance=ExtResource("6_n46tv")]
 visible = false
-self_modulate = Color(0, 0, 0, 0.768627)
+
+[node name="Inventory" type="Panel" parent="UILayer" node_paths=PackedStringArray("invGrid", "abandonSlot", "rifleSlot1", "rifleSlot2", "pistolSlot", "inventoryPanel", "equipment")]
+visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 206.0
-offset_top = 99.0
-offset_right = -539.0
-offset_bottom = -62.0
+offset_left = 140.0
+offset_top = 80.0
+offset_right = -1720.0
+offset_bottom = -850.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("4_hbm4b")
-BoxListPanel = ExtResource("12_hbm4b")
-invGrid = NodePath("PanelContainer/GridContainer")
-itemListPanel = NodePath("ListInventory")
-abandonSlot = NodePath("Abandon")
-rifleSlot1 = NodePath("RifleSlot1")
-rifleSlot2 = NodePath("RifleSlot2")
-pistolSlot = NodePath("PistolSlot")
+BoxListPanel = SubResource("PackedScene_yumcj")
+invGrid = NodePath("InventoryPanel/PanelContainer/GridContainer")
+abandonSlot = NodePath("InventoryPanel/Abandon")
+rifleSlot1 = NodePath("InventoryPanel/RifleSlot1")
+rifleSlot2 = NodePath("InventoryPanel/RifleSlot2")
+pistolSlot = NodePath("InventoryPanel/PistolSlot")
+inventoryPanel = NodePath("InventoryPanel")
+equipment = NodePath("../Equipment")
 
-[node name="Label" type="Label" parent="UILayer/Inventory"]
-layout_mode = 1
-anchors_preset = -1
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 936.0
-offset_top = 110.0
-offset_right = -888.0
-offset_bottom = -947.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "这是一个背包"
-horizontal_alignment = 1
+[node name="InventoryPanel" type="Panel" parent="UILayer/Inventory"]
+layout_mode = 0
+offset_left = 60.0
+offset_right = 1235.0
+offset_bottom = 920.0
 
-[node name="PanelContainer" type="PanelContainer" parent="UILayer/Inventory"]
+[node name="PanelContainer" type="PanelContainer" parent="UILayer/Inventory/InventoryPanel"]
 layout_mode = 0
 offset_left = 800.0
 offset_top = 493.0
 offset_right = 992.0
 offset_bottom = 621.0
-theme_override_styles/panel = SubResource("StyleBoxTexture_e8g1t")
+theme_override_styles/panel = SubResource("StyleBoxTexture_n46tv")
 
-[node name="GridContainer" type="GridContainer" parent="UILayer/Inventory/PanelContainer"]
+[node name="GridContainer" type="GridContainer" parent="UILayer/Inventory/InventoryPanel/PanelContainer"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 theme_override_constants/h_separation = 0
 theme_override_constants/v_separation = 0
 columns = 3
 
-[node name="Slot1" type="AspectRatioContainer" parent="UILayer/Inventory/PanelContainer/GridContainer"]
+[node name="Slot1" type="AspectRatioContainer" parent="UILayer/Inventory/InventoryPanel/PanelContainer/GridContainer"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="TextureRect" parent="UILayer/Inventory/PanelContainer/GridContainer/Slot1" instance=ExtResource("6_0a18m")]
+[node name="TextureRect" parent="UILayer/Inventory/InventoryPanel/PanelContainer/GridContainer/Slot1" instance=ExtResource("6_0a18m")]
 layout_mode = 2
 
-[node name="Slot2" type="AspectRatioContainer" parent="UILayer/Inventory/PanelContainer/GridContainer"]
+[node name="Slot2" type="AspectRatioContainer" parent="UILayer/Inventory/InventoryPanel/PanelContainer/GridContainer"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="TextureRect2" parent="UILayer/Inventory/PanelContainer/GridContainer/Slot2" instance=ExtResource("7_hbm4b")]
+[node name="TextureRect2" parent="UILayer/Inventory/InventoryPanel/PanelContainer/GridContainer/Slot2" instance=ExtResource("7_hbm4b")]
 layout_mode = 2
 
-[node name="Slot3" type="AspectRatioContainer" parent="UILayer/Inventory/PanelContainer/GridContainer"]
+[node name="Slot3" type="AspectRatioContainer" parent="UILayer/Inventory/InventoryPanel/PanelContainer/GridContainer"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="TextureRect3" parent="UILayer/Inventory/PanelContainer/GridContainer/Slot3" instance=ExtResource("8_pk645")]
+[node name="TextureRect3" parent="UILayer/Inventory/InventoryPanel/PanelContainer/GridContainer/Slot3" instance=ExtResource("8_pk645")]
 layout_mode = 2
 
-[node name="Slot4" type="AspectRatioContainer" parent="UILayer/Inventory/PanelContainer/GridContainer"]
+[node name="Slot4" type="AspectRatioContainer" parent="UILayer/Inventory/InventoryPanel/PanelContainer/GridContainer"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="TextureRect4" parent="UILayer/Inventory/PanelContainer/GridContainer/Slot4" instance=ExtResource("9_toxx1")]
+[node name="TextureRect4" parent="UILayer/Inventory/InventoryPanel/PanelContainer/GridContainer/Slot4" instance=ExtResource("9_toxx1")]
 layout_mode = 2
 
-[node name="Slot5" type="AspectRatioContainer" parent="UILayer/Inventory/PanelContainer/GridContainer"]
+[node name="Slot5" type="AspectRatioContainer" parent="UILayer/Inventory/InventoryPanel/PanelContainer/GridContainer"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="TextureRect5" parent="UILayer/Inventory/PanelContainer/GridContainer/Slot5" instance=ExtResource("10_pw7qe")]
+[node name="TextureRect5" parent="UILayer/Inventory/InventoryPanel/PanelContainer/GridContainer/Slot5" instance=ExtResource("10_pw7qe")]
 layout_mode = 2
 
-[node name="Slot6" type="AspectRatioContainer" parent="UILayer/Inventory/PanelContainer/GridContainer"]
+[node name="Slot6" type="AspectRatioContainer" parent="UILayer/Inventory/InventoryPanel/PanelContainer/GridContainer"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="TextureRect6" parent="UILayer/Inventory/PanelContainer/GridContainer/Slot6" instance=ExtResource("11_15m0i")]
+[node name="TextureRect6" parent="UILayer/Inventory/InventoryPanel/PanelContainer/GridContainer/Slot6" instance=ExtResource("11_15m0i")]
 layout_mode = 2
 
-[node name="ListInventory" type="Panel" parent="UILayer/Inventory"]
-visible = false
-self_modulate = Color(0, 0, 0, 0.768627)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 1207.0
-offset_top = 6.0
-offset_right = 462.0
-offset_bottom = -2.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Abandon" type="AspectRatioContainer" parent="UILayer/Inventory"]
+[node name="Abandon" type="AspectRatioContainer" parent="UILayer/Inventory/InventoryPanel"]
 layout_mode = 0
 offset_left = 1000.0
 offset_top = 800.0
 offset_right = 1064.0
 offset_bottom = 864.0
 
-[node name="Abandon" parent="UILayer/Inventory/Abandon" instance=ExtResource("13_pk645")]
+[node name="Abandon" parent="UILayer/Inventory/InventoryPanel/Abandon" instance=ExtResource("13_pk645")]
 layout_mode = 2
 
-[node name="RifleSlot1" type="AspectRatioContainer" parent="UILayer/Inventory"]
+[node name="RifleSlot1" type="AspectRatioContainer" parent="UILayer/Inventory/InventoryPanel"]
 layout_mode = 0
 offset_left = 130.0
 offset_top = 600.0
 offset_right = 386.0
 offset_bottom = 728.0
 
-[node name="AK74" type="TextureRect" parent="UILayer/Inventory/RifleSlot1"]
+[node name="AK74" type="TextureRect" parent="UILayer/Inventory/InventoryPanel/RifleSlot1"]
 layout_mode = 2
 texture = ExtResource("14_pw7qe")
 script = ExtResource("15_15m0i")
 gunshotSound = ExtResource("16_15m0i")
 reloadSound = ExtResource("17_yumcj")
 
-[node name="RifleSlot2" type="AspectRatioContainer" parent="UILayer/Inventory"]
+[node name="RifleSlot2" type="AspectRatioContainer" parent="UILayer/Inventory/InventoryPanel"]
 layout_mode = 0
 offset_left = 130.0
 offset_top = 750.0
 offset_right = 386.0
 offset_bottom = 878.0
 
-[node name="PistolSlot" type="AspectRatioContainer" parent="UILayer/Inventory"]
+[node name="PistolSlot" type="AspectRatioContainer" parent="UILayer/Inventory/InventoryPanel"]
 layout_mode = 0
 offset_left = 430.0
 offset_top = 600.0
 offset_right = 558.0
 offset_bottom = 728.0
 
-[node name="PM" type="TextureRect" parent="UILayer/Inventory/PistolSlot"]
+[node name="PM" type="TextureRect" parent="UILayer/Inventory/InventoryPanel/PistolSlot"]
 layout_mode = 2
 texture = ExtResource("17_yai8d")
 script = ExtResource("18_6x1pq")
 gunshotSound = ExtResource("19_6x1pq")
 reloadSound = ExtResource("21_n46tv")
+
+[node name="Label" type="Label" parent="UILayer/Inventory"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 150.0
+offset_right = 90.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = -1.5708
+text = "背包"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Equipment" type="Panel" parent="UILayer" node_paths=PackedStringArray("inventory", "equipmentPanel")]
+visible = false
+offset_left = 140.0
+offset_top = 230.0
+offset_right = 200.0
+offset_bottom = 380.0
+script = ExtResource("22_n46tv")
+inventory = NodePath("../Inventory")
+equipmentPanel = NodePath("EquipmentPanel")
+OpenColor = Color(0, 0, 0, 0.392157)
+
+[node name="Label" type="Label" parent="UILayer/Equipment"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 150.0
+offset_right = 90.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = -1.5708
+text = "装备"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EquipmentPanel" type="Panel" parent="UILayer/Equipment"]
+visible = false
+layout_mode = 0
+offset_left = 60.0
+offset_top = -150.0
+offset_right = 1235.0
+offset_bottom = 770.0
+
+[node name="Abandon" type="AspectRatioContainer" parent="UILayer/Equipment/EquipmentPanel"]
+layout_mode = 0
+offset_left = 1000.0
+offset_top = 800.0
+offset_right = 1064.0
+offset_bottom = 864.0
+
+[node name="Abandon" parent="UILayer/Equipment/EquipmentPanel/Abandon" instance=ExtResource("13_pk645")]
+layout_mode = 2
 
 [node name="Panel" type="Panel" parent="UILayer"]
 offset_left = 38.0

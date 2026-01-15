@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3 uid="uid://b7gud1c34j4u1"]
 
 [ext_resource type="Script" uid="uid://cfyc64j3ek5s8" path="res://script/ItemData.cs" id="1_7urpc"]
-[ext_resource type="PackedScene" uid="uid://ww8qvr1a2n17" path="res://sprite/items/test3.tscn" id="1_csvld"]
+[ext_resource type="Texture2D" uid="uid://dwmtaxiu6pmwd" path="res://assets/inventory/3.png" id="1_u8ei5"]
 
 [resource]
 script = ExtResource("1_7urpc")
 ItemId = "000003"
-itemTscn = ExtResource("1_csvld")
+itemTexture = ExtResource("1_u8ei5")
 metadata/_custom_type_script = "uid://cfyc64j3ek5s8"

@@ -3,22 +3,28 @@ using System;
 
 public partial class Items : TextureRect{
 	[Signal]
-	public delegate void SwappedEventHandler(
-		int swapType, AspectRatioContainer originSlot, AspectRatioContainer targetSlot
-		);//0:背包内交换  1:箱子内交换  2:背包换去箱子  3:箱子换去背包   4:背包销毁   5:箱子销毁
+	public delegate void SwappedEventHandler(int swapType, int originSlotID, int targetSlotID);
+	//0:背包内交换  1:箱子内交换  2:背包换去箱子或销毁  3:箱子换去背包  4:箱子销毁
 	private bool isDragging = false;
 	private Vector2 dragOffsetInLocalSpace = Vector2.Zero; // 改回本地偏移计算
 	private Control originalSlot;
 	private AspectRatioContainer targetSlot;
 	private CanvasLayer dragLayer;
 	public Inventory inventory;
+	public BoxList boxList;
+	public Rect2 boxListGlobalRect;
+	private int oSlotID;
 	
 	public override void _Ready(){
+		boxList = GetNode<BoxList>("/root/world/UILayer/BoxList");
 		inventory = GetNode<Inventory>("/root/world/UILayer/Inventory");
 		Swapped += inventory.OnSwapped;
 		originalSlot = GetParent() as Control;
 		dragLayer = GetNode<CanvasLayer>("/root/world/UILayer");
+		boxListGlobalRect = new Rect2(boxList.GlobalPosition, boxList.Size);
 	}
+
+	
 
 	public override void _Input(InputEvent @event){
 		// 修改点3：增加关键安全检查！
@@ -27,6 +33,14 @@ public partial class Items : TextureRect{
 			Rect2 globalRect = new Rect2(GlobalPosition, Size);
 			bool isMouseOverItem = globalRect.HasPoint(mbEvent.GlobalPosition);
 			if (mbEvent.Pressed && isMouseOverItem){
+				if (originalSlot.IsInGroup("InvSlot")){
+					oSlotID = inventory.GetSlotID(originalSlot as AspectRatioContainer);
+				}
+				else if (originalSlot.IsInGroup("BoxSlot")){
+					oSlotID = -1;
+					this.GetSlotID(boxList);
+					GD.Print("箱子中的序号找到了，是"+oSlotID);
+				}
 				// 开始拖拽
 				isDragging = true;
 				// 计算偏移量（使用全局坐标和物品自身全局坐标的差值）
@@ -64,10 +78,29 @@ public partial class Items : TextureRect{
 		}
 	}
 
+	private bool GetSlotID(Node root){
+		if (root is Items items){
+			if (items == this){
+				GD.Print("找到了");
+				oSlotID++;
+				return true;
+			} 
+			oSlotID++;
+		}
+		foreach (Node child in root.GetChildren()){
+			bool found = GetSlotID(child);
+			if (found){
+				return true; // 在子节点分支中找到，立即返回
+			}
+		}
+		return false;
+	}
+
+
 	private void TryDrop(){
 		// 安全：如果不在场景树，直接返回
 		if (!IsInsideTree()) return;
-
+		
 		Vector2 mouseScreenPos = GetViewport().GetMousePosition();
 		targetSlot = FindSlotAtPosition(dragLayer ,mouseScreenPos);
 		
@@ -84,7 +117,17 @@ public partial class Items : TextureRect{
 		}
 	}
 
+
+
 	private AspectRatioContainer FindSlotAtPosition(Node root, Vector2 screenPos){
+		
+		if (boxListGlobalRect.HasPoint(screenPos)&&boxList.Visible==true){
+			String itemID = inventory.GetItem(oSlotID);
+			boxList.AddItem(itemID);
+			SwapSignal(originalSlot);
+			return null;
+		}
+		
 		// 遍历所有槽位（AspectRatioContainer）
 		if (root is AspectRatioContainer aspectRatioContainer){
 			Rect2 slotGlobalRect = new Rect2(aspectRatioContainer.GlobalPosition, aspectRatioContainer.Size);
@@ -162,10 +205,10 @@ public partial class Items : TextureRect{
 	private void SwapSignal(Control oSlot){
 		GD.Print("signal");
 		if (oSlot.IsInGroup("InvSlot")){
-			EmitSignal(SignalName.Swapped, 4, oSlot, oSlot);
+			EmitSignal(SignalName.Swapped, 2, oSlotID, 0);
 		}
-		else if (oSlot.IsInGroup("BoxSlot")){
-			EmitSignal(SignalName.Swapped, 5, oSlot, oSlot);
+		else if (oSlot.IsInGroup("BoxSlot")){ //4
+			boxList.DeleteItem(oSlotID);
 		}
 		ProcessMode = ProcessModeEnum.Disabled;
 		QueueFree();
@@ -173,18 +216,25 @@ public partial class Items : TextureRect{
 	
 	//信号发送筛选
 	private void SwapSignal(Control oSlot, Control tSlot){
+		int tSlotID = inventory.GetSlotID(tSlot as AspectRatioContainer);
 		GD.Print("signal");
 		if (oSlot.IsInGroup("InvSlot") && tSlot.IsInGroup("InvSlot")){
-			EmitSignal(SignalName.Swapped, 0, oSlot, tSlot);
+			EmitSignal(SignalName.Swapped, 0, oSlotID, tSlotID);
 		}
 		else if (oSlot.IsInGroup("BoxSlot") && tSlot.IsInGroup("BoxSlot")){
-			EmitSignal(SignalName.Swapped, 1, oSlot, tSlot);
+			EmitSignal(SignalName.Swapped, 1, oSlotID, tSlotID);
 		}
-		else if (oSlot.IsInGroup("InvSlot") && tSlot.IsInGroup("BoxSlot")){
-			EmitSignal(SignalName.Swapped, 2, oSlot, tSlot);
-		}
-		else if (oSlot.IsInGroup("BoxSlot") && tSlot.IsInGroup("InvSlot")){
-			EmitSignal(SignalName.Swapped, 3, oSlot, tSlot);
+		else if (oSlot.IsInGroup("BoxSlot") && tSlot.IsInGroup("InvSlot")){ //3
+			String oItemID = boxList.GetItem(oSlotID);
+			String tItemID = inventory.GetItem(tSlotID);
+			GD.Print("原格子序号为"+oSlotID+" 原物品ID为"+oItemID+" 目标格子序号为"+tSlotID+" 目标物品ID为"+tItemID);
+			inventory.ChangeItem(tSlotID, oItemID);
+			if(tItemID != "000000"){
+				boxList.ChangeItem(oSlotID, tItemID);
+			}
+			else{
+				boxList.DeleteItem(oSlotID);
+			}
 		}
 	}
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://h0ey10x6vv2q"]
+[gd_scene load_steps=8 format=3 uid="uid://h0ey10x6vv2q"]
 
 [ext_resource type="Texture2D" uid="uid://dx0yisudar1ww" path="res://assets/box.png" id="1_femy4"]
 [ext_resource type="Script" uid="uid://djd6rmarh2ohd" path="res://script/Box.cs" id="1_pgi5q"]
@@ -40,9 +40,13 @@ _data = {
 &"open": SubResource("Animation_ceagw")
 }
 
-[node name="Box" type="Node2D" node_paths=PackedStringArray("boxAnimationPlayer")]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pgi5q"]
+size = Vector2(64, 64)
+
+[node name="Box" type="Node2D" node_paths=PackedStringArray("boxAnimationPlayer", "area2d")]
 script = ExtResource("1_pgi5q")
 boxAnimationPlayer = NodePath("AnimationPlayer")
+area2d = NodePath("Area2D")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_femy4")
@@ -51,3 +55,8 @@ texture = ExtResource("1_femy4")
 libraries = {
 &"": SubResource("AnimationLibrary_443nj")
 }
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("RectangleShape2D_pgi5q")
