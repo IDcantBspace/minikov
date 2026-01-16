@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://dcwvel8fs7eee"]
+
+[ext_resource type="Texture2D" uid="uid://cxxdab0xk3l4s" path="res://assets/inventory/AK74.png" id="1_6ffbc"]
+[ext_resource type="Script" uid="uid://cfyc64j3ek5s8" path="res://script/ItemData.cs" id="1_8rdgl"]
+[ext_resource type="Texture2D" uid="uid://cnx6auk7atlhm" path="res://assets/inventory/AK74_item.png" id="1_hjn3o"]
+
+[resource]
+script = ExtResource("1_8rdgl")
+ItemId = "110001"
+ItemType = "PrimaryWeapon"
+itemTexture = ExtResource("1_hjn3o")
+equipmentTexture = ExtResource("1_6ffbc")
+metadata/_custom_type_script = "uid://cfyc64j3ek5s8"

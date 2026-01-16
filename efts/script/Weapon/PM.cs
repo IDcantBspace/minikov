@@ -16,7 +16,7 @@ public partial class PM : Weapon{
 	
 	public override void _Ready(){
 		inventory = GetNode<Inventory>("/root/world/UILayer/Inventory");
-		Swapped += inventory.OnSwapped;
+		//Swapped += inventory.OnSwapped;
 		firingRate = 300f;
 		//damage = 20;
 		fireModeManual = false;
@@ -114,7 +114,7 @@ public partial class PM : Weapon{
 	
 	private void SwapSignal(Control oSlot){
 		Inventory inventory = GetNode<Inventory>("/root/world/UILayer/Inventory");
-		Swapped += inventory.OnSwapped;
+		//Swapped += inventory.OnSwapped;
 		GD.Print("signal");
 		EmitSignal(SignalName.Swapped, 6, oSlot, oSlot);
 		ProcessMode = ProcessModeEnum.Disabled;

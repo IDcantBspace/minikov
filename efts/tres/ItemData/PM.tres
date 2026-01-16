@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://oqkdcfwidhod"]
+
+[ext_resource type="Script" uid="uid://cfyc64j3ek5s8" path="res://script/ItemData.cs" id="1_5ge24"]
+[ext_resource type="Texture2D" uid="uid://bh212tv8660bf" path="res://assets/inventory/PM.png" id="1_cc4j8"]
+[ext_resource type="Texture2D" uid="uid://cdvuyoak3mnoq" path="res://assets/inventory/PM_item.png" id="2_6chuj"]
+
+[resource]
+script = ExtResource("1_5ge24")
+ItemId = "120001"
+ItemType = "SecondaryWeapon"
+itemTexture = ExtResource("2_6chuj")
+equipmentTexture = ExtResource("1_cc4j8")
+metadata/_custom_type_script = "uid://cfyc64j3ek5s8"

@@ -4,15 +4,18 @@ using System.Collections.Generic;
 
 public partial class Player : Creature{
 	
-	[Signal]
-	public delegate void OpenBoxEventHandler(bool isOpen,Node list);
-	
 	[Export]
 	public RichTextLabel HUDText { get; set; }
 	
 	private int speed = 200;
-		
-	private Inventory inventory;
+	
+	//获取各个UI界面
+	[Export]
+	public Inventory inventory { get; set; }
+	[Export]
+	public BoxList boxList { get; set; }
+	[Export]
+	public Equipment equipment { get; set; }
 	
 	private bool inventoryIsOpen = false;
 	
@@ -99,9 +102,6 @@ public partial class Player : Creature{
 		maxHealthPoint = 100;
 		healthPoint = maxHealthPoint;
 		AddToGroup("player");
-		
-		inventory = GetNode<Inventory>("../UILayer/Inventory");
-		OpenBox += inventory.OnOpenBox;
 		// 获取Sprite2D节点
 		_sprite = GetNode<Sprite2D>("Sprite2D");
 		// 如果场景中没有Sprite2D节点，可以在这里创建一个
@@ -291,32 +291,23 @@ public partial class Player : Creature{
 		}
 	}
 
+	public void OnOpenBox(Box box){
+		Inventory();
+		boxList.Initialize(box);
+	}
+
 	//切换背包状态
 	public void Inventory(){
-		Box closestNode = null;
 		if(inventory != null && inventoryIsOpen == true){
 			inventoryIsOpen = false;
-			EmitSignal(SignalName.OpenBox, inventoryIsOpen, closestNode);
+			inventory.Close();
+			equipment.Close();
+			boxList.Close();
 		}
 		else if(inventory != null && inventoryIsOpen == false){
-			// 1. 获取该分组下的所有节点
-			var nodesInGroup = GetTree().GetNodesInGroup("itemslist");
-			// 2. 遍历并计算距离
-			foreach (var node in nodesInGroup){
-				if (node is Box node2D){
-					// 计算与玩家的距离平方
-					float distanceSquared = GlobalPosition.DistanceSquaredTo(node2D.GlobalPosition);
-					// 判断是否在半径范围内，且是否为目前最近
-					if (distanceSquared <= (50f * 50f)){
-						closestNode = node2D;
-					}
-				}
-			}
-			if(closestNode != null){
-				OpenBox += closestNode.OnOpenBox;
-			}
 			inventoryIsOpen = true;
-			EmitSignal(SignalName.OpenBox, inventoryIsOpen, closestNode);
+			inventory.Initialize();
+			equipment.Initialize();
 		}
 	}
 

@@ -1,10 +1,11 @@
 [gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3 uid="uid://ci4ietrw3m66e"]
 
-[ext_resource type="PackedScene" uid="uid://dwala2atfl0re" path="res://sprite/items/dollars.tscn" id="1_b5nkw"]
+[ext_resource type="Texture2D" uid="uid://bdt2gb83cxg7k" path="res://assets/inventory/dollars.png" id="1_05csi"]
 [ext_resource type="Script" uid="uid://cfyc64j3ek5s8" path="res://script/ItemData.cs" id="1_rmoy2"]
 
 [resource]
 script = ExtResource("1_rmoy2")
 ItemId = "000007"
-itemTscn = ExtResource("1_b5nkw")
+ItemType = "Item"
+itemTexture = ExtResource("1_05csi")
 metadata/_custom_type_script = "uid://cfyc64j3ek5s8"
