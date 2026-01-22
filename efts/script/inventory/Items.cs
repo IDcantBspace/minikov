@@ -155,7 +155,14 @@ public partial class Items : TextureRect{
 			}
 		}
 		if(oItemID.Substring(0, 2) == "11"){
-			if(targetSlot.IsInGroup("RifleSlot")&&originalSlot.IsInGroup("BoxSlot")){
+			if(slotType == "Box"&&originalSlot.IsInGroup("RifleSlot")){
+				inventory.DeleteEquipment(originalSlot as AspectRatioContainer);
+				boxList.AddItem(oItemID);
+				ProcessMode = ProcessModeEnum.Disabled;
+				QueueFree();
+				return;
+			}
+			else if(targetSlot.IsInGroup("RifleSlot")&&originalSlot.IsInGroup("BoxSlot")){
 				String tItemID = inventory.ChangeEquipment(targetSlot, oItemID);
 				if(tItemID != "000000"){
 					boxList.ChangeItem(oSlotID, tItemID);
@@ -178,7 +185,10 @@ public partial class Items : TextureRect{
 		else if (originalSlot.IsInGroup("BoxSlot")){
 			oItemID = boxList.GetItem(oSlotID);
 		}
-		
+		else if (originalSlot.IsInGroup("RifleSlot")){
+			//GD.Print
+			oItemID = inventory.GetEquipment(originalSlot as AspectRatioContainer);
+		}
 	}
 
 	private String FindSlotType(){

@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://bmbdx1rb4l4go"]
+[gd_scene load_steps=13 format=3 uid="uid://bmbdx1rb4l4go"]
 
 [ext_resource type="PackedScene" uid="uid://gbiugi1qfcc0" path="res://sprite/player.tscn" id="1_5y81h"]
 [ext_resource type="Script" uid="uid://rnm6xrgy60xm" path="res://script/World.cs" id="1_e8g1t"]
@@ -9,14 +9,6 @@
 [ext_resource type="PackedScene" uid="uid://catlduk7aqlxj" path="res://sprite/BoxList.tscn" id="6_n46tv"]
 [ext_resource type="PackedScene" uid="uid://h0ey10x6vv2q" path="res://sprite/box.tscn" id="12_0a18m"]
 [ext_resource type="PackedScene" uid="uid://ddcipsajjknri" path="res://sprite/items/Abandon.tscn" id="13_pk645"]
-[ext_resource type="Texture2D" uid="uid://cxxdab0xk3l4s" path="res://assets/inventory/AK74.png" id="14_pw7qe"]
-[ext_resource type="Script" uid="uid://bmtwuhmlgvc1j" path="res://script/Weapon/AK74.cs" id="15_15m0i"]
-[ext_resource type="AudioStream" uid="uid://beyjyhwsft1uj" path="res://assets/audio/AK74ShootVoive.tres" id="16_15m0i"]
-[ext_resource type="Texture2D" uid="uid://bh212tv8660bf" path="res://assets/inventory/PM.png" id="17_yai8d"]
-[ext_resource type="AudioStream" uid="uid://cfjxgc7p6xcye" path="res://assets/audio/AK74Reload.wav" id="17_yumcj"]
-[ext_resource type="Script" uid="uid://b0335jxyft6ik" path="res://script/Weapon/PM.cs" id="18_6x1pq"]
-[ext_resource type="AudioStream" uid="uid://co7mo5qvvgilf" path="res://assets/audio/PMShootVoice.tres" id="19_6x1pq"]
-[ext_resource type="AudioStream" uid="uid://c2jf3ax7laqlx" path="res://assets/audio/PMReload.wav" id="21_n46tv"]
 [ext_resource type="Script" uid="uid://bhkw2b3kkb7v0" path="res://script/Equipment.cs" id="22_n46tv"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6b2o6"]
@@ -109,13 +101,6 @@ offset_top = 600.0
 offset_right = 386.0
 offset_bottom = 728.0
 
-[node name="AK74" type="TextureRect" parent="UILayer/Inventory/InventoryPanel/RifleSlot1"]
-layout_mode = 2
-texture = ExtResource("14_pw7qe")
-script = ExtResource("15_15m0i")
-gunshotSound = ExtResource("16_15m0i")
-reloadSound = ExtResource("17_yumcj")
-
 [node name="RifleSlot2" type="AspectRatioContainer" parent="UILayer/Inventory/InventoryPanel"]
 layout_mode = 0
 offset_left = 130.0
@@ -129,13 +114,6 @@ offset_left = 430.0
 offset_top = 600.0
 offset_right = 558.0
 offset_bottom = 728.0
-
-[node name="PM" type="TextureRect" parent="UILayer/Inventory/InventoryPanel/PistolSlot"]
-layout_mode = 2
-texture = ExtResource("17_yai8d")
-script = ExtResource("18_6x1pq")
-gunshotSound = ExtResource("19_6x1pq")
-reloadSound = ExtResource("21_n46tv")
 
 [node name="Label" type="Label" parent="UILayer/Inventory"]
 layout_mode = 1

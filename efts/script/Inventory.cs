@@ -48,7 +48,7 @@ public partial class Inventory : Panel{
 		invItemsList = Enumerable.Repeat("000000", listLength).ToArray();
 		TestReady();  //临时设置背包物品ID列表
 		invSlotList = new AspectRatioContainer[6];
-		UpdateGunDate();
+		//UpdateGunDate();
 		// 设置鼠标过滤器为Stop，这样节点才能接收鼠标事件
 		MouseFilter = MouseFilterEnum.Stop;
 		
@@ -111,9 +111,9 @@ public partial class Inventory : Panel{
 	}
 	
 	public void TestReady(){
-		rifle1 = "110001";
+		rifle1 = "000000";
 		rifle2 = "000000";
-		pistol = "120001";
+		pistol = "000000";
 		invItemsList[0] = "000000";
 		invItemsList[1] = "000000";
 		invItemsList[2] = "000000";
@@ -131,6 +131,9 @@ public partial class Inventory : Panel{
 				newWeaponData.reloadTime, newWeaponData.tacReloadTime, newWeaponData.gunshotSound, newWeaponData.reloadSound
 				);
 		}
+		else{
+			player.UpdateGunDate(0);
+		}
 		if(rifle2 != "000000"){
 			WeaponData newWeaponData = WeaponDatabase.Instance.GetWeapon(rifle2);
 			player.UpdateGunDate(
@@ -138,6 +141,9 @@ public partial class Inventory : Panel{
 				newWeaponData.fireModeBurst, newWeaponData.fireModeAuto, newWeaponData.magazineSize,
 				newWeaponData.reloadTime, newWeaponData.tacReloadTime, newWeaponData.gunshotSound, newWeaponData.reloadSound
 				);
+		}
+		else{
+			player.UpdateGunDate(1);
 		}
 		if(pistol != "000000"){
 			WeaponData newWeaponData = WeaponDatabase.Instance.GetWeapon(pistol);
@@ -147,7 +153,9 @@ public partial class Inventory : Panel{
 				newWeaponData.reloadTime, newWeaponData.tacReloadTime, newWeaponData.gunshotSound, newWeaponData.reloadSound
 				);
 		}
-
+		else{
+			player.UpdateGunDate(2);
+		}
 	}
 	
 	public void Initialize(){
@@ -237,9 +245,30 @@ public partial class Inventory : Panel{
 				newItem.Texture = newItemData.equipmentTexture;
 			}
 		}
+		UpdateGunDate();
 		return temWeaponID;
 	}
 	
+	public void DeleteEquipment(AspectRatioContainer tSlot){
+		if(tSlot == rifleSlot1){
+			rifle1 = "000000";
+		}
+		else if(tSlot == rifleSlot2){
+			rifle2 = "000000";
+		}
+		UpdateGunDate();
+	}
+	
+	public String GetEquipment(AspectRatioContainer tSlot){
+		if(tSlot == rifleSlot1){
+			return rifle1;
+		}
+		else if(tSlot == rifleSlot2){
+			return rifle2;
+		}
+		return "000000";
+	}
+
 	//wrong
 	public void SwapItem(int oSlotID, int tSlotID){
 		GD.Print("背包交换oSlotID="+oSlotID+"  tSlotID="+tSlotID);

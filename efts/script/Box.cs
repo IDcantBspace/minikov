@@ -28,6 +28,7 @@ public partial class Box : Node2D
 		itemsList.Add("000005");
 		itemsList.Add("000006");
 		itemsList.Add("000007");
+		itemsList.Add("110001");
 		//GD.Print(itemsList[0]);
 		AddToGroup("itemslist");
 		area2d.InputEvent += OnInputEvent; 

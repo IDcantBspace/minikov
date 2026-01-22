@@ -112,6 +112,12 @@ public partial class Player : Creature{
 		AddChild(shootTimer);
 		shootTimer.Timeout += OnTimeOut; // 连接超时信号
 		lowPass = AudioServer.GetBusEffect(1, 0) as AudioEffectLowPassFilter;
+		while(weaponNum<=3){
+			weaponData newWeapon = new weaponData(false,"None",1,false,false,false,false,0,0,0,null,null);
+			weapon.Add(newWeapon);
+			weaponNum++;
+		}
+
 	}
 	
 	// 在编辑器和游戏中绘制枪口位置
@@ -135,7 +141,7 @@ public partial class Player : Creature{
 	public override void _Process(double delta){
 		QueueRedraw(); 
 		//**临时**放置敌人
-		if(!inventoryIsOpen){
+		if(!inventoryIsOpen&&(weapon[usingWeapon].fireMode != "None")){
 			if (Input.IsActionJustPressed("changeFireMode") && !_isFiring && !_isReloading){
 				ChangeFireMode();
 				UpdateText();
@@ -319,13 +325,24 @@ public partial class Player : Creature{
 		UpdateText();
 	}
 
+	public void UpdateGunDate(int i){
+		weaponData newWeapon = new weaponData(false,"None",1,false,false,false,false,0,0,0,null,null);
+		if(i<weaponNum){
+			GD.Print("删除了第"+i+"把枪");
+			weapon[i] = newWeapon;
+		}
+		UpdateText();
+	}
+
 	public void UpdateGunDate(
 		int i, String mode, float R, bool M, bool S, 
 		bool B, bool A, int mag, float rt, float trt, AudioStream Sound, AudioStream rSound
 	){
 		weaponData newWeapon = new weaponData(true,mode,R,M,S,B,A,mag,rt,trt,Sound,rSound);
-		weapon.Add(newWeapon);
-		weaponNum++;
+		weapon[i] = newWeapon;
+		if(weapon[usingWeapon].fireMode == "None"){
+			usingWeapon = i;
+		}
 		fireInterval = 60/weapon[usingWeapon].firingRate;
 		shootTimer.WaitTime = fireInterval;
 		gunShotPlayer.Stream = weapon[usingWeapon].gunshotSound;
