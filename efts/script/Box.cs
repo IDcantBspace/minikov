@@ -47,6 +47,7 @@ public partial class Box : Node2D
 	}
 	
 	public void DeleteItemInBox(int itemNum){
+		GD.Print("box删除的位置是"+itemNum);
 		itemsList.RemoveAt(itemNum);
 	}
 	

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3 uid="uid://bjhvqqtabnre1"]
+
+[ext_resource type="Script" uid="uid://36lwtrj3h415" path="res://script/WeaponData.cs" id="1_3f57m"]
+[ext_resource type="AudioStream" uid="uid://beyjyhwsft1uj" path="res://assets/audio/AK74ShootVoive.tres" id="1_nsog5"]
+[ext_resource type="AudioStream" uid="uid://cfjxgc7p6xcye" path="res://assets/audio/AK74Reload.wav" id="2_s027i"]
+
+[resource]
+script = ExtResource("1_3f57m")
+ItemId = "110001"
+firingRate = 600.0
+fireModeManual = false
+fireModeSemi = true
+fireModeBurst = false
+fireModeAuto = true
+magazineSize = 30
+reloadTime = 5.0
+tacReloadTime = 4.0
+gunshotSound = ExtResource("1_nsog5")
+reloadSound = ExtResource("2_s027i")
+metadata/_custom_type_script = "uid://36lwtrj3h415"

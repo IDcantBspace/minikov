@@ -24,24 +24,32 @@ public partial class BoxList : Panel{
 		}
 	}
 	
-	public void DeleteItem(int itemNum){
-		openingBox.DeleteItemInBox(itemNum);
-		Node targetItem = vBoxContainer.GetChild(itemNum);
+	public void DeleteItem(int slotID){
+		openingBox.DeleteItemInBox(slotID);
+		GD.Print("删除的位置是"+slotID);
+		Node targetItem = vBoxContainer.GetChild(slotID);
 		// 从父节点移除
 		vBoxContainer.RemoveChild(targetItem);
 		// 安全删除节点
 		targetItem.QueueFree();
 	}
 	
-	public void ChangeItem(int itemNum, String itemID){
-		openingBox.ChangeItemInBox(itemNum, itemID);
-		//ItemData newItem = ItemDatabase.Instance.GetItem(itemID);
-		//ItemPanel targetItem = vBoxContainer.GetChild(itemNum) as ItemPanel;
-		//targetItem.ChangeTexture(itemID, newItem.itemTexture);
+	public void DeleteItemOnUI(int slotID){
+		GD.Print("删除的位置是"+slotID);
+		Node targetItem = vBoxContainer.GetChild(slotID);
+		// 从父节点移除
+		vBoxContainer.RemoveChild(targetItem);
+		// 安全删除节点
+		targetItem.QueueFree();
 	}
 	
-	public String GetItem(int itemNum){
-		return openingBox.GetItemInBox(itemNum);
+	public void ChangeItem(int slotID, String itemID){
+		DeleteItem(slotID);
+		AddItem(itemID);
+	}
+	
+	public String GetItem(int slotID){
+		return openingBox.GetItemInBox(slotID);
 	}
 	
 	public void Close(){

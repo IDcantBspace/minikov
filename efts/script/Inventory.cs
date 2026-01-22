@@ -6,30 +6,24 @@ using System.Collections.Generic;
 public partial class Inventory : Panel{
 	
 	private Player player;
-	private Box itemBox;
 	private AspectRatioContainer[] invSlotList;
-	[Signal]
-	public delegate void UpdateEventHandler(String[] newList);
-	[Export]
-	public PackedScene BoxListPanel { get; set; }
 	[Export]
 	public PackedScene genericItem { get; set; }
 	[Export]
 	public GridContainer invGrid { get; set; }
 	public int listLength = 6;
 	private String[] invItemsList;
-	public PanelContainer boxListPanel;
 	[Export]
 	public Control abandonSlot { get; set; }
 	[Export]
 	public Control rifleSlot1 { get; set; }
-	public Weapon rifle1;
+	public String rifle1;
 	[Export]
 	public Control rifleSlot2 { get; set; }
-	public Weapon rifle2;
+	public String rifle2;
 	[Export]
 	public Control pistolSlot { get; set; }
-	public Weapon pistol;
+	public String pistol;
 	[Export]
 	public Panel inventoryPanel{ get; set; }
 	[Export]
@@ -51,12 +45,9 @@ public partial class Inventory : Panel{
 		rifleSlot1.AddToGroup("RifleSlot");
 		rifleSlot2.AddToGroup("RifleSlot");
 		pistolSlot.AddToGroup("PistolSlot");
-
 		invItemsList = Enumerable.Repeat("000000", listLength).ToArray();
-		FindItemsInSlots(); //获得枪械数据
 		TestReady();  //临时设置背包物品ID列表
 		invSlotList = new AspectRatioContainer[6];
-		//GetInvSlot(6);  //获得容器格子数组
 		UpdateGunDate();
 		// 设置鼠标过滤器为Stop，这样节点才能接收鼠标事件
 		MouseFilter = MouseFilterEnum.Stop;
@@ -100,15 +91,7 @@ public partial class Inventory : Panel{
 		GD.Print("可点击区域被点击了！");
 	}
 	
-	
-	private void FindItemsInSlots()
-	{
-		rifle1 = FindTextureRectInSlot(rifleSlot1);
-		rifle2 = FindTextureRectInSlot(rifleSlot2);
-		pistol = FindTextureRectInSlot(pistolSlot);
-	}
-	
-	private Weapon FindTextureRectInSlot(Control slot)
+	private TextureRect FindTextureRectInSlot(Control slot)
 	{
 		// 获取容器节点。这里使用GetNode，假设这些节点与当前脚本挂载的节点是同级或子级。
 		if (slot == null){
@@ -118,7 +101,7 @@ public partial class Inventory : Panel{
 		// 遍历容器的所有直接子节点
 		foreach (Node child in slot.GetChildren()){
 			// 检查子节点是否为TextureRect类型
-			if (child is Weapon textureRect){
+			if (child is TextureRect textureRect){
 				// 找到TextureRect，直接返回
 				return textureRect;
 			}
@@ -128,6 +111,9 @@ public partial class Inventory : Panel{
 	}
 	
 	public void TestReady(){
+		rifle1 = "110001";
+		rifle2 = "000000";
+		pistol = "120001";
 		invItemsList[0] = "000000";
 		invItemsList[1] = "000000";
 		invItemsList[2] = "000000";
@@ -137,25 +123,28 @@ public partial class Inventory : Panel{
 	}
 	
 	public void UpdateGunDate(){
-		if(rifle1 != null){
+		if(rifle1 != "000000"){
+			WeaponData newWeaponData = WeaponDatabase.Instance.GetWeapon(rifle1);
 			player.UpdateGunDate(
-				0, "Semi", rifle1.firingRate, rifle1.fireModeManual, rifle1.fireModeSemi,
-				rifle1.fireModeBurst, rifle1.fireModeAuto, rifle1.magazineSize,
-				rifle1.reloadTime, rifle1.tacReloadTime, rifle1.gunshotSound, rifle1.reloadSound
+				0, "Semi", newWeaponData.firingRate, newWeaponData.fireModeManual, newWeaponData.fireModeSemi,
+				newWeaponData.fireModeBurst, newWeaponData.fireModeAuto, newWeaponData.magazineSize,
+				newWeaponData.reloadTime, newWeaponData.tacReloadTime, newWeaponData.gunshotSound, newWeaponData.reloadSound
 				);
 		}
-		if(rifle2 != null){
+		if(rifle2 != "000000"){
+			WeaponData newWeaponData = WeaponDatabase.Instance.GetWeapon(rifle2);
 			player.UpdateGunDate(
-				1, "Semi", rifle2.firingRate, rifle2.fireModeManual, rifle2.fireModeSemi,
-				rifle2.fireModeBurst, rifle2.fireModeAuto, rifle2.magazineSize,
-				rifle2.reloadTime, rifle2.tacReloadTime, rifle2.gunshotSound, rifle2.reloadSound
+				1, "Semi", newWeaponData.firingRate, newWeaponData.fireModeManual, newWeaponData.fireModeSemi,
+				newWeaponData.fireModeBurst, newWeaponData.fireModeAuto, newWeaponData.magazineSize,
+				newWeaponData.reloadTime, newWeaponData.tacReloadTime, newWeaponData.gunshotSound, newWeaponData.reloadSound
 				);
 		}
-		if(pistol != null){
+		if(pistol != "000000"){
+			WeaponData newWeaponData = WeaponDatabase.Instance.GetWeapon(pistol);
 			player.UpdateGunDate(
-				1, "Semi", pistol.firingRate, pistol.fireModeManual, pistol.fireModeSemi,
-				pistol.fireModeBurst, pistol.fireModeAuto, pistol.magazineSize,
-				pistol.reloadTime, pistol.tacReloadTime, pistol.gunshotSound, pistol.reloadSound
+				1, "Semi", newWeaponData.firingRate, newWeaponData.fireModeManual, newWeaponData.fireModeSemi,
+				newWeaponData.fireModeBurst, newWeaponData.fireModeAuto, newWeaponData.magazineSize,
+				newWeaponData.reloadTime, newWeaponData.tacReloadTime, newWeaponData.gunshotSound, newWeaponData.reloadSound
 				);
 		}
 
@@ -185,14 +174,78 @@ public partial class Inventory : Panel{
 		ItemData newItemData = ItemDatabase.Instance.GetItem(itemID);
 		if (newItemData != null){
 			Items newItem = genericItem.Instantiate<Items>();
-			targetSlot.AddChild(newItem);// 将新实例添加到滚动条中显示
+			targetSlot.AddChild(newItem);// 新实例添加
 			newItem.Name = itemID;
 			newItem.Texture = newItemData.itemTexture;
 		}
 	}
 	
+	public void AddItemInInventoryWithID(String itemID, int slotID){
+		ItemData newItemData = ItemDatabase.Instance.GetItem(itemID);
+		if (newItemData != null){
+			Items newItem = genericItem.Instantiate<Items>();
+			invSlotList[slotID].AddChild(newItem);
+			newItem.Name = itemID;
+			newItem.Texture = newItemData.itemTexture;
+		}
+	}
+	
+	public void DeleteItem(int tSlotID){
+		invItemsList[tSlotID] = "000000";
+		if(invSlotList[tSlotID].GetChildCount() > 0){
+			Node targetItem = invSlotList[tSlotID].GetChild(0);
+			// 从父节点移除
+			invSlotList[tSlotID].RemoveChild(targetItem);
+			// 安全删除节点
+			targetItem.QueueFree();
+		}
+	}
+	
 	public String GetItem(int slotID){
 		return invItemsList[slotID];
+	}
+
+	public void ChangeItem(int tSlotID, String oItemID){
+		if(invItemsList[tSlotID] != "000000"){
+			DeleteItem(tSlotID);
+		}
+		invItemsList[tSlotID] = oItemID;
+		AddItemInInventoryWithID(oItemID, tSlotID);
+	}
+	
+	public String ChangeEquipment(AspectRatioContainer tSlot, String oItemID){
+		String temWeaponID = "000000";
+		if(tSlot == rifleSlot1){
+			temWeaponID = rifle1;
+			rifle1 = oItemID;
+			ItemData newItemData = ItemDatabase.Instance.GetItem(oItemID);
+			if (newItemData != null){
+				Items newItem = genericItem.Instantiate<Items>();
+				rifleSlot1.AddChild(newItem);
+				newItem.Name = oItemID;
+				newItem.Texture = newItemData.equipmentTexture;
+			}
+		}
+		else if(tSlot == rifleSlot2){
+			temWeaponID = rifle2;
+			rifle2 = oItemID;
+			ItemData newItemData = ItemDatabase.Instance.GetItem(oItemID);
+			if (newItemData != null){
+				Items newItem = genericItem.Instantiate<Items>();
+				rifleSlot2.AddChild(newItem);
+				newItem.Name = oItemID;
+				newItem.Texture = newItemData.equipmentTexture;
+			}
+		}
+		return temWeaponID;
+	}
+	
+	//wrong
+	public void SwapItem(int oSlotID, int tSlotID){
+		GD.Print("背包交换oSlotID="+oSlotID+"  tSlotID="+tSlotID);
+		String temStr = invItemsList[oSlotID];
+		invItemsList[oSlotID] = invItemsList[tSlotID];
+		invItemsList[tSlotID] = temStr;
 	}
 	
 	public int GetSlotID(AspectRatioContainer originSlot){
@@ -223,9 +276,7 @@ public partial class Inventory : Panel{
 		}
 	}
 		
-	public void ChangeItem(int tSlotID, String oItemID){
-		invItemsList[tSlotID] = oItemID;
-	}
+
 		
 		
 	public void OnSwapped(int swapType, int oSlotID, int tSlotID){
@@ -254,26 +305,4 @@ public partial class Inventory : Panel{
 		}
 	}
 	
-	//boxListPanel = BoxListPanel.Instantiate<PanelContainer>();
-		//itemListPanel.AddChild(boxListPanel);
-		//boxListPanel.Position = new Vector2(100, 100);
-		//itemListPanel.Visible = true;
-		//boxGrid = GetNode<GridContainer>("ListInventory/BoxListPanel/GridContainer");
-		//if(boxGrid != null){
-			//GetBoxSlot(6);
-		//}
-		//itemBox = list as Box;
-		//Update += itemBox.OnUpdate;
-		//for(int i=0;i<itemBox.listLength;i++){
-			//GD.Print("循环i="+i);
-			//GD.Print(itemBox.itemsList[i]);
-			//boxItemsList[i] = itemBox.itemsList[i];
-			//if(itemBox.itemsList[i] != "000000"){
-				//ItemData newItem = ItemDatabase.Instance.GetItem(itemBox.itemsList[i]);
-				//if (newItem != null){
-					//Node itemInstance = newItem.itemTscn.Instantiate();
-					//boxSlotList[i].AddChild(itemInstance); // 将新实例添加到场景树中显示
-				//}
-			//}
-		//}
 }

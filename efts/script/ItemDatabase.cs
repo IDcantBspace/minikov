@@ -48,7 +48,6 @@ public partial class ItemDatabase : Node{
 				{
 					_itemDictionary[itemRes.ItemId] = itemRes;
 					loadedCount++;
-					GD.Print($"ItemDatabase: 成功加载物品 '{itemRes.ItemId}'");
 				}
 			}
 			fileName = dir.GetNext();
@@ -58,7 +57,6 @@ public partial class ItemDatabase : Node{
 	}
 
 	public ItemData GetItem(string itemId){
-		GD.Print("查找运行了");
 		// 常数时间查找[citation:10]
 		if (_itemDictionary.TryGetValue(itemId, out ItemData item))
 		{

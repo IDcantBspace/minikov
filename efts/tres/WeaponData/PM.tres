@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3 uid="uid://2ivudafg4c07"]
+
+[ext_resource type="Script" uid="uid://36lwtrj3h415" path="res://script/WeaponData.cs" id="1_1nqog"]
+[ext_resource type="AudioStream" uid="uid://c2jf3ax7laqlx" path="res://assets/audio/PMReload.wav" id="1_w4v1n"]
+[ext_resource type="AudioStream" uid="uid://co7mo5qvvgilf" path="res://assets/audio/PMShootVoice.tres" id="2_8gdqa"]
+
+[resource]
+script = ExtResource("1_1nqog")
+ItemId = "120001"
+firingRate = 300.0
+fireModeManual = false
+fireModeSemi = true
+fireModeBurst = false
+fireModeAuto = false
+magazineSize = 8
+reloadTime = 2.0
+tacReloadTime = 1.4
+gunshotSound = ExtResource("2_8gdqa")
+reloadSound = ExtResource("1_w4v1n")
+metadata/_custom_type_script = "uid://36lwtrj3h415"
