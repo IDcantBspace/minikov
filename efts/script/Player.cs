@@ -55,6 +55,8 @@ public partial class Player : Creature{
 	public int usingWeapon = 0;
 	public int weaponNum = 0;
 	public String waitingFor = null;
+	//记录切换武器的递归次数
+	private int changeWeaponNum = 0;
 	
 	public class weaponData{
 		public bool canUse;
@@ -152,9 +154,11 @@ public partial class Player : Creature{
 			}
 			if (Input.IsActionJustPressed("changeWeaponUp") && !_isFiring && !_isReloading){
 				ChangeWeaponUp();
+				changeWeaponNum = 0;
 			}
 			if (Input.IsActionJustPressed("changeWeaponDown") && !_isFiring && !_isReloading){
 				ChangeWeaponDown();
+				changeWeaponNum = 0;
 			}
 			//if (Input.IsMouseButtonPressed(MouseButton.Left)){
 			if (Input.IsActionJustPressed("openFire") && _canFire && !_isReloading){
@@ -326,6 +330,10 @@ public partial class Player : Creature{
 	}
 
 	public void UpdateGunDate(int i){
+		if(i == usingWeapon){
+			ChangeWeaponUp();
+			changeWeaponNum = 0;
+		}
 		weaponData newWeapon = new weaponData(false,"None",1,false,false,false,false,0,0,0,null,null);
 		if(i<weaponNum){
 			GD.Print("删除了第"+i+"把枪");
@@ -358,9 +366,13 @@ public partial class Player : Creature{
 		if(!weapon[usingWeapon].canUse){
 			ChangeWeaponUp();
 		}
+		else if(changeWeaponNum >= 4){
+			return;
+		}
 		else{
 			UpdateGunDate();
 		}
+		changeWeaponNum++;
 	}
 	
 	public void ChangeWeaponDown(){
@@ -371,9 +383,13 @@ public partial class Player : Creature{
 		if(!weapon[usingWeapon].canUse){
 			ChangeWeaponDown();
 		}
+		else if(changeWeaponNum >= 4){
+			return;
+		}
 		else{
 			UpdateGunDate();
 		}
+		changeWeaponNum++;
 	}
 
 	// 生成子弹

@@ -174,6 +174,34 @@ public partial class Items : TextureRect{
 				QueueFree();
 				return;
 			}
+			else if(targetSlot.IsInGroup("RifleSlot")&&originalSlot.IsInGroup("RifleSlot")&&targetSlot!=originalSlot){
+				String tItemID = inventory.ChangeEquipment(targetSlot, oItemID);
+				inventory.ChangeEquipment(originalSlot as AspectRatioContainer, tItemID);
+				ProcessMode = ProcessModeEnum.Disabled;
+				QueueFree();
+				return;
+			}
+		}
+		if(oItemID.Substring(0, 2) == "12"){
+			if(slotType == "Box"&&originalSlot.IsInGroup("PistolSlot")){
+				inventory.DeleteEquipment(originalSlot as AspectRatioContainer);
+				boxList.AddItem(oItemID);
+				ProcessMode = ProcessModeEnum.Disabled;
+				QueueFree();
+				return;
+			}
+			else if(targetSlot.IsInGroup("PistolSlot")&&originalSlot.IsInGroup("BoxSlot")){
+				String tItemID = inventory.ChangeEquipment(targetSlot, oItemID);
+				if(tItemID != "000000"){
+					boxList.ChangeItem(oSlotID, tItemID);
+				}
+				else{
+					boxList.DeleteItem(oSlotID);
+				}
+				ProcessMode = ProcessModeEnum.Disabled;
+				QueueFree();
+				return;
+			}
 		}
 		ReturnToOriginalSlot();
 	}
@@ -185,8 +213,7 @@ public partial class Items : TextureRect{
 		else if (originalSlot.IsInGroup("BoxSlot")){
 			oItemID = boxList.GetItem(oSlotID);
 		}
-		else if (originalSlot.IsInGroup("RifleSlot")){
-			//GD.Print
+		else if (originalSlot.IsInGroup("RifleSlot")||originalSlot.IsInGroup("PistolSlot")){
 			oItemID = inventory.GetEquipment(originalSlot as AspectRatioContainer);
 		}
 	}

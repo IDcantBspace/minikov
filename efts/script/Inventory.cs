@@ -24,6 +24,7 @@ public partial class Inventory : Panel{
 	[Export]
 	public Control pistolSlot { get; set; }
 	public String pistol;
+	private int equipmentNeedToUpdate = 0;
 	[Export]
 	public Panel inventoryPanel{ get; set; }
 	[Export]
@@ -123,39 +124,48 @@ public partial class Inventory : Panel{
 	}
 	
 	public void UpdateGunDate(){
-		if(rifle1 != "000000"){
+		if(equipmentNeedToUpdate == 1){
+			if(rifle1 != "000000"){
 			WeaponData newWeaponData = WeaponDatabase.Instance.GetWeapon(rifle1);
 			player.UpdateGunDate(
 				0, "Semi", newWeaponData.firingRate, newWeaponData.fireModeManual, newWeaponData.fireModeSemi,
 				newWeaponData.fireModeBurst, newWeaponData.fireModeAuto, newWeaponData.magazineSize,
 				newWeaponData.reloadTime, newWeaponData.tacReloadTime, newWeaponData.gunshotSound, newWeaponData.reloadSound
 				);
+			}
+			else{
+				player.UpdateGunDate(0);
+			}
 		}
-		else{
-			player.UpdateGunDate(0);
+		if(equipmentNeedToUpdate == 2){
+			if(rifle2 != "000000"){
+				WeaponData newWeaponData = WeaponDatabase.Instance.GetWeapon(rifle2);
+				player.UpdateGunDate(
+					1, "Semi", newWeaponData.firingRate, newWeaponData.fireModeManual, newWeaponData.fireModeSemi,
+					newWeaponData.fireModeBurst, newWeaponData.fireModeAuto, newWeaponData.magazineSize,
+					newWeaponData.reloadTime, newWeaponData.tacReloadTime, newWeaponData.gunshotSound, newWeaponData.reloadSound
+					);
+			}
+			else{
+				player.UpdateGunDate(1);
+			}
 		}
-		if(rifle2 != "000000"){
-			WeaponData newWeaponData = WeaponDatabase.Instance.GetWeapon(rifle2);
-			player.UpdateGunDate(
-				1, "Semi", newWeaponData.firingRate, newWeaponData.fireModeManual, newWeaponData.fireModeSemi,
-				newWeaponData.fireModeBurst, newWeaponData.fireModeAuto, newWeaponData.magazineSize,
-				newWeaponData.reloadTime, newWeaponData.tacReloadTime, newWeaponData.gunshotSound, newWeaponData.reloadSound
-				);
+		if(equipmentNeedToUpdate == 3){
+			GD.Print("update work");
+			if(pistol != "000000"){
+				WeaponData newWeaponData = WeaponDatabase.Instance.GetWeapon(pistol);
+				player.UpdateGunDate(
+					2, "Semi", newWeaponData.firingRate, newWeaponData.fireModeManual, newWeaponData.fireModeSemi,
+					newWeaponData.fireModeBurst, newWeaponData.fireModeAuto, newWeaponData.magazineSize,
+					newWeaponData.reloadTime, newWeaponData.tacReloadTime, newWeaponData.gunshotSound, newWeaponData.reloadSound
+					);
+			}
+			else{
+				player.UpdateGunDate(2);
+				
+			}
 		}
-		else{
-			player.UpdateGunDate(1);
-		}
-		if(pistol != "000000"){
-			WeaponData newWeaponData = WeaponDatabase.Instance.GetWeapon(pistol);
-			player.UpdateGunDate(
-				1, "Semi", newWeaponData.firingRate, newWeaponData.fireModeManual, newWeaponData.fireModeSemi,
-				newWeaponData.fireModeBurst, newWeaponData.fireModeAuto, newWeaponData.magazineSize,
-				newWeaponData.reloadTime, newWeaponData.tacReloadTime, newWeaponData.gunshotSound, newWeaponData.reloadSound
-				);
-		}
-		else{
-			player.UpdateGunDate(2);
-		}
+		equipmentNeedToUpdate = 0;
 	}
 	
 	public void Initialize(){
@@ -233,6 +243,7 @@ public partial class Inventory : Panel{
 				newItem.Name = oItemID;
 				newItem.Texture = newItemData.equipmentTexture;
 			}
+			equipmentNeedToUpdate = 1;
 		}
 		else if(tSlot == rifleSlot2){
 			temWeaponID = rifle2;
@@ -244,6 +255,19 @@ public partial class Inventory : Panel{
 				newItem.Name = oItemID;
 				newItem.Texture = newItemData.equipmentTexture;
 			}
+			equipmentNeedToUpdate = 2;
+		}
+		else if(tSlot == pistolSlot){
+			temWeaponID = pistol;
+			pistol = oItemID;
+			ItemData newItemData = ItemDatabase.Instance.GetItem(oItemID);
+			if (newItemData != null){
+				Items newItem = genericItem.Instantiate<Items>();
+				pistolSlot.AddChild(newItem);
+				newItem.Name = oItemID;
+				newItem.Texture = newItemData.equipmentTexture;
+			}
+			equipmentNeedToUpdate = 3;
 		}
 		UpdateGunDate();
 		return temWeaponID;
@@ -252,9 +276,16 @@ public partial class Inventory : Panel{
 	public void DeleteEquipment(AspectRatioContainer tSlot){
 		if(tSlot == rifleSlot1){
 			rifle1 = "000000";
+			equipmentNeedToUpdate = 1;
 		}
 		else if(tSlot == rifleSlot2){
 			rifle2 = "000000";
+			equipmentNeedToUpdate = 2;
+		}
+		else if(tSlot == pistolSlot){
+			GD.Print("delete work");
+			pistol = "000000";
+			equipmentNeedToUpdate = 3;
 		}
 		UpdateGunDate();
 	}
@@ -265,6 +296,9 @@ public partial class Inventory : Panel{
 		}
 		else if(tSlot == rifleSlot2){
 			return rifle2;
+		}
+		else if(tSlot == pistolSlot){
+			return pistol;
 		}
 		return "000000";
 	}
