@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="GearData" load_steps=2 format=3 uid="uid://dkl84syarxfyc"]
+
+[ext_resource type="Script" uid="uid://bb41jesseprcv" path="res://script/GearData.cs" id="1_vf7yc"]
+
+[resource]
+script = ExtResource("1_vf7yc")
+ItemId = "210001"
+slotColumnNum = 2
+slotRowNum = 2
+metadata/_custom_type_script = "uid://bb41jesseprcv"

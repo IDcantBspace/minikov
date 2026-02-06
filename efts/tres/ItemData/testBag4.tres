@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://las7hvbtu7bd"]
+
+[ext_resource type="Script" uid="uid://cfyc64j3ek5s8" path="res://script/ItemData.cs" id="1_fsljc"]
+[ext_resource type="Texture2D" uid="uid://dei2v67h05jvg" path="res://assets/testbag4.png" id="1_tmgo0"]
+[ext_resource type="Texture2D" uid="uid://dx0yisudar1ww" path="res://assets/box.png" id="2_v65xl"]
+
+[resource]
+script = ExtResource("1_fsljc")
+ItemId = "210001"
+ItemType = "Bag"
+itemTexture = ExtResource("2_v65xl")
+equipmentTexture = ExtResource("1_tmgo0")
+metadata/_custom_type_script = "uid://cfyc64j3ek5s8"

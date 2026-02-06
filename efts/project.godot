@@ -23,6 +23,7 @@ buses/default_bus_layout="uid://cqycpih0lmre2"
 
 ItemDatabase="*res://script/ItemDatabase.cs"
 WeaponDatabase="*res://script/WeaponDatabase.cs"
+GearDatabase="*res://script/GearDatabase.cs"
 
 [display]
 

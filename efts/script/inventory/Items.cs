@@ -8,6 +8,7 @@ public partial class Items : TextureRect{
 	private AspectRatioContainer targetSlot;
 	private CanvasLayer dragLayer;
 	public Inventory inventory;
+	public Equipment equipment;
 	public BoxList boxList;
 	public Rect2 boxListGlobalRect;
 	private int oSlotID;
@@ -16,6 +17,7 @@ public partial class Items : TextureRect{
 	public override void _Ready(){
 		boxList = GetNode<BoxList>("/root/world/UILayer/BoxList");
 		inventory = GetNode<Inventory>("/root/world/UILayer/Inventory");
+		equipment = GetNode<Equipment>("/root/world/UILayer/Equipment");
 		originalSlot = GetParent() as Control;
 		dragLayer = GetNode<CanvasLayer>("/root/world/UILayer");
 		boxListGlobalRect = new Rect2(boxList.GlobalPosition, boxList.Size);
@@ -108,6 +110,10 @@ public partial class Items : TextureRect{
 	}
 
 	private void DropJudge(String slotType){
+		if(slotType == "Box"&&originalSlot.IsInGroup("BoxSlot")){
+			ReturnToOriginalSlot();
+			return;
+		}
 		if(oItemID.Substring(0, 2) == "00"){
 			if(slotType == "Box"&&originalSlot.IsInGroup("InvSlot")){
 				boxList.AddItem(oItemID);
@@ -203,6 +209,27 @@ public partial class Items : TextureRect{
 				return;
 			}
 		}
+		if(oItemID.Substring(0, 2) == "21"){ //背包类
+			if(slotType == "Box"&&originalSlot.IsInGroup("BagSlot")){
+				equipment.DeleteEquipment(originalSlot as AspectRatioContainer);
+				boxList.AddItem(oItemID);
+				ProcessMode = ProcessModeEnum.Disabled;
+				QueueFree();
+				return;
+			}
+			else if(targetSlot.IsInGroup("BagSlot")&&originalSlot.IsInGroup("BoxSlot")){
+				String tItemID = equipment.ChangeEquipment(targetSlot, oItemID);
+				if(tItemID != "000000"){
+					boxList.ChangeItem(oSlotID, tItemID);
+				}
+				else{
+					boxList.DeleteItem(oSlotID);
+				}
+				ProcessMode = ProcessModeEnum.Disabled;
+				QueueFree();
+				return;
+			}
+		}
 		ReturnToOriginalSlot();
 	}
 
@@ -215,6 +242,9 @@ public partial class Items : TextureRect{
 		}
 		else if (originalSlot.IsInGroup("RifleSlot")||originalSlot.IsInGroup("PistolSlot")){
 			oItemID = inventory.GetEquipment(originalSlot as AspectRatioContainer);
+		}
+		else if (originalSlot.IsInGroup("BagSlot")){
+			oItemID = equipment.GetEquipment(originalSlot as AspectRatioContainer);
 		}
 	}
 

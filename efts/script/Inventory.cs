@@ -11,8 +11,11 @@ public partial class Inventory : Panel{
 	public PackedScene genericItem { get; set; }
 	[Export]
 	public GridContainer invGrid { get; set; }
-	public int listLength = 6;
-	private String[] invItemsList;
+	[Export]
+	public PanelContainer invPanel {get; set; }
+	public int slotColumn = 0;
+	public int slotRow = 0;
+	private List<String> invItemsList;
 	[Export]
 	public Control abandonSlot { get; set; }
 	[Export]
@@ -46,9 +49,8 @@ public partial class Inventory : Panel{
 		rifleSlot1.AddToGroup("RifleSlot");
 		rifleSlot2.AddToGroup("RifleSlot");
 		pistolSlot.AddToGroup("PistolSlot");
-		invItemsList = Enumerable.Repeat("000000", listLength).ToArray();
+		invItemsList = new List<String>();
 		TestReady();  //临时设置背包物品ID列表
-		invSlotList = new AspectRatioContainer[6];
 		//UpdateGunDate();
 		// 设置鼠标过滤器为Stop，这样节点才能接收鼠标事件
 		MouseFilter = MouseFilterEnum.Stop;
@@ -115,12 +117,6 @@ public partial class Inventory : Panel{
 		rifle1 = "000000";
 		rifle2 = "000000";
 		pistol = "000000";
-		invItemsList[0] = "000000";
-		invItemsList[1] = "000000";
-		invItemsList[2] = "000000";
-		invItemsList[3] = "000000";
-		invItemsList[4] = "000000";
-		invItemsList[5] = "000000";
 	}
 	
 	public void UpdateGunDate(){
@@ -169,23 +165,63 @@ public partial class Inventory : Panel{
 	}
 	
 	public void Initialize(){
-		
-		for(int temNum = 0;temNum<listLength;temNum++){
-			// 创建AspectRatioContainer实例
-			AspectRatioContainer slot = new AspectRatioContainer();
-			// 设置最小尺寸为64x64（关键步骤）
-			slot.CustomMinimumSize = new Vector2(64, 64);
-			// 给容器命名（可选）
-			slot.Name = $"Slot{temNum + 1}";
-			// 添加到GridContainer
-			invGrid.AddChild(slot);
-			invSlotList[temNum] = slot;
-			slot.AddToGroup("InvSlot");
-			if (invItemsList[temNum] != "000000"){
-				AddItemInInventory(invItemsList[temNum], slot);
+		GD.Print("操作前"+invPanel.Size.X+" "+invPanel.Size.Y+" "+invItemsList.Count());
+		(slotColumn, slotRow) = equipment.GetBag();
+		//GD.Print(64*slotColumn+" "+64*slotRow);
+		if(slotColumn!=0&&slotRow!=0){
+			GD.Print("操作");
+			invGrid.Columns = slotColumn;
+			invPanel.Size = new Vector2(64*slotColumn, 64*slotRow);
+			var invStyleBox = invPanel.GetThemeStylebox("panel") as StyleBoxTexture;
+			invStyleBox.RegionRect = new Rect2(0, 0, 64*slotColumn, 64*slotRow);
+			invPanel.AddThemeStyleboxOverride("panel", invStyleBox);
+			if(!invPanel.Visible){
+				invPanel.Visible = true;
+			}
+			if(invItemsList.Count() != slotColumn*slotRow){
+				invItemsList.Clear();
+				for(int temNum = 0;temNum<slotColumn*slotRow;temNum++){
+					invItemsList.Add("000000");
+				}
+			}
+			invSlotList = new AspectRatioContainer[slotColumn*slotRow];
+			for(int temNum = 0;temNum<slotColumn*slotRow;temNum++){
+				// 创建AspectRatioContainer实例
+				AspectRatioContainer slot = new AspectRatioContainer();
+				// 设置最小尺寸为64x64（关键步骤）
+				slot.CustomMinimumSize = new Vector2(64, 64);
+				// 给容器命名（可选）
+				slot.Name = $"Slot{temNum + 1}";
+				// 添加到GridContainer
+				invGrid.AddChild(slot);
+				invSlotList[temNum] = slot;
+				slot.AddToGroup("InvSlot");
+				if (invItemsList[temNum] != "000000"){
+					AddItemInInventory(invItemsList[temNum], slot);
+				}
 			}
 		}
-		this.Visible = true;
+		else{
+			GD.Print("操作2");
+			if(invSlotList != null){
+				Array.Clear(invSlotList, 0, slotColumn*slotRow);
+			}
+			invGrid.GetChildren().ToList().ForEach(child => child.QueueFree());
+			invPanel.Visible = false;
+			invItemsList.Clear();
+		}
+		GD.Print("操作后"+invPanel.Size.X+" "+invPanel.Size.Y+" "+invItemsList.Count());
+		if(!equipment.Visible){
+			this.Visible = true;
+		}
+	}
+	
+	public void Close(){
+		if(invSlotList != null){
+			Array.Clear(invSlotList, 0, slotColumn*slotRow);
+		}
+		invGrid.GetChildren().ToList().ForEach(child => child.QueueFree());
+		this.Visible = false;
 	}
 	
 	public void AddItemInInventory(String itemID, AspectRatioContainer targetSlot){
@@ -319,12 +355,6 @@ public partial class Inventory : Panel{
 			}
 		}
 		return oSlotID;
-	}
-	
-	public void Close(){
-		Array.Clear(invSlotList, 0, listLength);
-		invGrid.GetChildren().ToList().ForEach(child => child.QueueFree());
-		this.Visible = false;
 	}
 	
 	public void GetInvSlot(int length){

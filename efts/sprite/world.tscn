@@ -42,7 +42,7 @@ shape = SubResource("RectangleShape2D_6b2o6")
 [node name="BoxList" parent="UILayer" instance=ExtResource("6_n46tv")]
 visible = false
 
-[node name="Inventory" type="Panel" parent="UILayer" node_paths=PackedStringArray("invGrid", "abandonSlot", "rifleSlot1", "rifleSlot2", "pistolSlot", "inventoryPanel", "equipment")]
+[node name="Inventory" type="Panel" parent="UILayer" node_paths=PackedStringArray("invGrid", "invPanel", "abandonSlot", "rifleSlot1", "rifleSlot2", "pistolSlot", "inventoryPanel", "equipment")]
 visible = false
 anchors_preset = 15
 anchor_right = 1.0
@@ -56,6 +56,7 @@ grow_vertical = 2
 script = ExtResource("4_hbm4b")
 genericItem = ExtResource("6_0a18m")
 invGrid = NodePath("InventoryPanel/PanelContainer/GridContainer")
+invPanel = NodePath("InventoryPanel/PanelContainer")
 abandonSlot = NodePath("InventoryPanel/Abandon")
 rifleSlot1 = NodePath("InventoryPanel/RifleSlot1")
 rifleSlot2 = NodePath("InventoryPanel/RifleSlot2")
@@ -73,16 +74,14 @@ offset_bottom = 920.0
 layout_mode = 0
 offset_left = 800.0
 offset_top = 493.0
-offset_right = 992.0
-offset_bottom = 621.0
+offset_right = 800.0
+offset_bottom = 493.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_n46tv")
 
 [node name="GridContainer" type="GridContainer" parent="UILayer/Inventory/InventoryPanel/PanelContainer"]
-custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 theme_override_constants/h_separation = 0
 theme_override_constants/v_separation = 0
-columns = 3
 
 [node name="Abandon" type="AspectRatioContainer" parent="UILayer/Inventory/InventoryPanel"]
 layout_mode = 0
@@ -130,7 +129,7 @@ text = "背包"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Equipment" type="Panel" parent="UILayer" node_paths=PackedStringArray("inventory", "equipmentPanel")]
+[node name="Equipment" type="Panel" parent="UILayer" node_paths=PackedStringArray("inventory", "equipmentPanel", "bagSlot")]
 visible = false
 offset_left = 140.0
 offset_top = 230.0
@@ -139,6 +138,8 @@ offset_bottom = 380.0
 script = ExtResource("22_n46tv")
 inventory = NodePath("../Inventory")
 equipmentPanel = NodePath("EquipmentPanel")
+bagSlot = NodePath("EquipmentPanel/Bag")
+genericItem = ExtResource("6_0a18m")
 OpenColor = Color(0, 0, 0, 0.392157)
 
 [node name="Label" type="Label" parent="UILayer/Equipment"]
@@ -173,6 +174,13 @@ offset_bottom = 864.0
 
 [node name="Abandon" parent="UILayer/Equipment/EquipmentPanel/Abandon" instance=ExtResource("13_pk645")]
 layout_mode = 2
+
+[node name="Bag" type="AspectRatioContainer" parent="UILayer/Equipment/EquipmentPanel"]
+layout_mode = 0
+offset_left = 962.0
+offset_top = 417.0
+offset_right = 1090.0
+offset_bottom = 545.0
 
 [node name="Panel" type="Panel" parent="UILayer"]
 offset_left = 38.0
